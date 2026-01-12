@@ -1248,7 +1248,7 @@ for cnt in contours:
     # Filter by size
     if bw < 6 or bh < 12:
         continue
-    if bw > 60 or bh > 50:
+    if bw > 80 or bh > 70:
         continue
 
     # Extract the blob with some padding
