@@ -1222,9 +1222,10 @@ v_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 20))
 v_lines = cv2.morphologyEx(zone_binary, cv2.MORPH_OPEN, v_kernel)
 zone_binary = cv2.subtract(zone_binary, v_lines)
 
-# Dilate slightly to connect fragmented strokes (2x2 is gentler)
-connect_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2, 2))
-zone_binary = cv2.dilate(zone_binary, connect_kernel, iterations=1)
+# Morphological closing to connect fragmented strokes
+# Closing = dilate then erode (fills gaps while preserving shape)
+close_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+zone_binary = cv2.morphologyEx(zone_binary, cv2.MORPH_CLOSE, close_kernel)
 
 # Find contours (potential handwritten digits)
 contours, _ = cv2.findContours(zone_binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
