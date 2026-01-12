@@ -390,8 +390,8 @@
             <div class="panel">
                 <h3>Erkannte Objekte bearbeiten</h3>
                 <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Markieren Sie einen Bereich im Bild:</p>
-                <button class="btn zone-btn" id="btnDeleteObjects" onclick="setEditMode('delete')" style="background:#dc3545;">Objekte löschen</button>
-                <button class="btn zone-btn" id="btnAddObject" onclick="setEditMode('add')" style="background:#28a745;">Objekt hinzufügen</button>
+                <button class="btn edit-btn" id="btnDeleteObjects" onclick="setEditMode('delete')" style="background:#dc3545;">Objekte löschen</button>
+                <button class="btn edit-btn" id="btnAddObject" onclick="setEditMode('add')" style="background:#28a745;">Objekt hinzufügen</button>
                 <div id="editModeInfo" style="margin-top:10px; padding:8px; background:#0a3d62; border-radius:5px; font-size:12px; display:none;">
                     <span id="editModeText"></span>
                 </div>
@@ -847,10 +847,10 @@
             // Deactivate edit mode when selecting a zone
             editMode = null;
             document.getElementById('editModeInfo').style.display = 'none';
-            document.getElementById('btnDeleteObjects').style.opacity = '0.5';
-            document.getElementById('btnDeleteObjects').style.border = 'none';
-            document.getElementById('btnAddObject').style.opacity = '0.5';
-            document.getElementById('btnAddObject').style.border = 'none';
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.style.opacity = '1';
+                btn.style.border = 'none';
+            });
         }
 
         function setEditMode(mode) {
@@ -865,11 +865,16 @@
             });
             document.getElementById('activeZoneInfo').style.display = 'none';
 
-            // Update edit mode buttons
-            document.getElementById('btnDeleteObjects').style.opacity = mode === 'delete' ? '1' : '0.5';
-            document.getElementById('btnDeleteObjects').style.border = mode === 'delete' ? '3px solid white' : 'none';
-            document.getElementById('btnAddObject').style.opacity = mode === 'add' ? '1' : '0.5';
-            document.getElementById('btnAddObject').style.border = mode === 'add' ? '3px solid white' : 'none';
+            // Update edit mode buttons - highlight active one
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.style.opacity = '1';
+                btn.style.border = 'none';
+            });
+            if (mode === 'delete') {
+                document.getElementById('btnDeleteObjects').style.border = '3px solid white';
+            } else if (mode === 'add') {
+                document.getElementById('btnAddObject').style.border = '3px solid white';
+            }
 
             // Show edit mode info
             const infoDiv = document.getElementById('editModeInfo');
