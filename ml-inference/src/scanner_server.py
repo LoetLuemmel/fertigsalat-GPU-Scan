@@ -865,7 +865,7 @@ def read_product_codes_from_zone():
     """Read all product codes from the product codes zone using EasyOCR in subprocess."""
     global product_code_cache
     # Clear cache for new scan
-    product_code_cache = {}
+    product_code_cache = {{}}
 
     if zone_codes is None:
         return
@@ -958,7 +958,7 @@ def read_product_names_from_zone():
     """Read all product names from the product names zone using EasyOCR in subprocess."""
     global product_name_cache
     # Clear cache for new scan
-    product_name_cache = {}
+    product_name_cache = {{}}
 
     if zone_names is None:
         return
