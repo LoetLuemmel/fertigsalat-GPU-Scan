@@ -1,0 +1,89 @@
+services:
+  orchestrator:
+    build:
+      context: ./orchestrator
+      dockerfile: Dockerfile
+    container_name: email-orchestrator
+    volumes:
+      - ./shared/input:/app/input:ro
+      - ./shared/intermediate:/app/intermediate
+      - ./shared/output:/app/output
+    environment:
+      - PYTHONUNBUFFERED=1
+      - INPUT_DIR=/app/input
+      - INTERMEDIATE_DIR=/app/intermediate
+      - OUTPUT_DIR=/app/output
+    depends_on:
+      - opencv-prep
+      - layout-analyzer
+      - ml-inference
+    restart: unless-stopped
+
+  opencv-prep:
+    build:
+      context: ./opencv-prep
+      dockerfile: Dockerfile
+    container_name: email-opencv-prep
+    volumes:
+      - ./shared/input:/app/input:ro
+      - ./shared/intermediate:/app/intermediate
+    environment:
+      - PYTHONUNBUFFERED=1
+      - INPUT_DIR=/app/input
+      - OUTPUT_DIR=/app/intermediate
+    restart: unless-stopped
+
+  layout-analyzer:
+    build:
+      context: ./layout-analyzer
+      dockerfile: Dockerfile
+    container_name: email-layout-analyzer
+    volumes:
+      - ./shared/intermediate:/app/intermediate
+      - ./shared/templates:/app/templates
+    environment:
+      - PYTHONUNBUFFERED=1
+      - INPUT_DIR=/app/intermediate
+      - OUTPUT_DIR=/app/intermediate
+      - TEMPLATES_DIR=/app/templates
+      - DEFINITIONS_DIR=/app/templates/definitions
+    restart: unless-stopped
+
+  ml-inference:
+    build:
+      context: ./ml-inference
+      dockerfile: Dockerfile
+    container_name: email-ml-inference
+    volumes:
+      - ./shared/intermediate:/app/intermediate
+      - ./shared/output:/app/output
+      - ./shared/templates:/app/templates
+      - ./shared/training_data:/app/training_data
+      - ./shared/models:/app/models
+    ports:
+      - "8080:8080"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - INPUT_DIR=/app/intermediate
+      - OUTPUT_DIR=/app/output
+      - DEFINITIONS_DIR=/app/templates/definitions
+      - USE_OPTIMIZED_SCANNING=true
+      - EMPTY_CELL_VARIANCE_THRESHOLD=50
+      - EMPTY_CELL_WHITE_RATIO=0.95
+      - OCR_LANGS=de
+      - USE_GPU=true
+      - SCANNER_MODE=true
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+
+volumes:
+  shared-input:
+  shared-intermediate:
+  shared-output:

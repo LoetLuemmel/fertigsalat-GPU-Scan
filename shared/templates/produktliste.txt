@@ -1,0 +1,63 @@
+Produktliste - Zuordnung Zeile → Produktnummer → Produktname
+============================================================
+
+Zeile | Produkt-Nr. | Produktname
+------|-------------|------------------------------------------
+  1   | 1-12        | Mischsalat
+  2   | 13-16       | Blattsalatsalat
+  3   | 17-22       | Saisonsalat
+  4   | 30          | Salade Méditerranée
+  5   | 31          | Märitsalat
+  6   | 32          | Griechischer Mais Thon Salat
+  7   | 33          | Gemüsesalat
+  8   | 34          | Selleriesalat
+  9   | 35          | Nüsslisalat mit Speck und Ei
+ 10   | 36          | Salade Caprese
+ 11   | 37          | Nüsslisalat mit Ei
+ 12   | 38          | Power-Salat
+ 13   | 39          | Griechischer Salat
+ 14   | 40          | Bunter Quinoa-Linsensalat
+ 15   | 41          | Grüner Salat mit Rüebli & Kernen
+ 16   | 42          | Grüner Salat mit Hüttenkäse
+ 17   | 43          | Grüner Salat gemischt
+ 18   | 44          | Grüner Salat mit Bohnen
+ 19   | 45          | Grüner Salat mit Poulet & Peperoni
+------|-------------|--- "Ofen" Haltbarkeit 4 Tage -------------
+ 20   | 90          | Grüner Salat mit Rüebli & Kernen
+ 21   | 91          | Grüner Salat mit Gurken und Ei
+ 22   | 92          | Grüner Salat mit Tomaten, Ei und Käse
+ 23   | 93          | Grüner Salat gemischt
+ 24   | 94          | Bohnen-Feta Salat
+ 25   | 95          | Randensalat mit Hüttenkäse
+------|-------------|--- Sandwiches Haltbarkeit 2 Tage --------
+ 26   | 600         | Sandwich Custro mit Schinken
+ 27   | 601         | Veggi mit Schinken
+ 28   | 602         | Sandwich Custro mit Käse
+ 29   | 603         | Veggi mit Corahon mit Käse
+ 30   | 604         | Sandwich mit Salami
+ 31   | 605         | Zopf mit Salami
+ 32   | 606         | Laugensandwich mit Salami
+ 33   | 607         | Laugensandwich mit Kräuterfrischkäse
+ 34   | 608         | Laugensandwich mit Schinken
+ 35   | 609         | Ciabatta mit Thon
+ 36   | 610         | Ciabattina mit Schinken
+ 37   | 611         | Schnitzelbrötchen gross
+ 38   | 612         | Schnitzelbrötchen mit Trockenfl.
+ 39   | 613         | Nugget-Parisette mit Schinken
+ 40   | 614         | Nugget-Parisette Käse
+------|-------------|--- Weitere Produkte Haltbarkeit 3 Tage --
+ 41   | 130         | Birchermüesli
+ 42   | 150         | Wrap Mediterran
+ 43   | 150         | Wrap mit Schinken Quinoa & Rössbeef
+ 44   | 151         | Wrap mit Schinken Quinoa & Käse
+ 45   | 151         | Wrap mit Schinken
+ 46   | 152         | Wrap mit Bärlauch
+ 47   | 152         | Wrap Tabuleh
+------|-------------|--- Suppen -------------------------------
+ 48   |             | Suppen Haltbarkeit 4 Tage
+------|-------------|--- Nicht definiert -----------------------
+ 49   | 200         | Rassige Tomatensuppe
+ 50   | 201         | Rüebli-Zucchettisuppe
+ 51   | 202         | Lauch-Specksuppe
+ 52   | 210-212     | Saisonsuppe (Kürbis > Broccoli > Spargel)
+

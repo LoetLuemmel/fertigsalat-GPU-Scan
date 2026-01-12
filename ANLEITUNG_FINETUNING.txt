@@ -1,0 +1,88 @@
+================================================================================
+ANLEITUNG: EMNIST-Modell Fine-Tuning für Bestellmengen-Erkennung
+================================================================================
+
+PROBLEM:
+Das Modell erkennt manche handgeschriebenen Ziffern falsch (z.B. "4" wird als "1" erkannt).
+Lösung: Eigene Trainingsbeispiele sammeln und das Modell damit nachtrainieren.
+
+--------------------------------------------------------------------------------
+SCHRITT 1: Trainingssamples sammeln
+--------------------------------------------------------------------------------
+
+1. Web-Oberfläche öffnen: http://192.168.3.241:8080/
+
+2. Ein Bestellformular laden (EML-Datei oder direkt scannen)
+
+3. Für JEDE falsch erkannte Ziffer:
+   - Auf die erkannte Ziffer klicken
+   - Im Dialog die RICHTIGE Ziffer eingeben
+   - "Als Trainingsbeispiel speichern" klicken
+
+4. WICHTIG: Alle Ziffern 0-9 abdecken!
+   - Mindestens 15-20 Beispiele PRO Ziffer
+   - Verschiedene Handschriften wenn möglich
+   - Besonders "4", "7", "1", "9" gut abdecken (oft verwechselt)
+
+--------------------------------------------------------------------------------
+SCHRITT 2: Trainingsfortschritt prüfen
+--------------------------------------------------------------------------------
+
+Anzahl der gesammelten Samples anzeigen:
+
+  docker exec email-ml-inference ls -la /app/training_data/
+
+Oder detaillierter:
+
+  for d in 0 1 2 3 4 5 6 7 8 9; do
+    echo -n "Ziffer $d: "
+    docker exec email-ml-inference ls /app/training_data/$d 2>/dev/null | wc -l
+  done
+
+ZIEL: Mindestens 150-200 Samples insgesamt, gleichmäßig verteilt.
+
+--------------------------------------------------------------------------------
+SCHRITT 3: Fine-Tuning ausführen
+--------------------------------------------------------------------------------
+
+ERST ausführen wenn ALLE Ziffern 0-9 mit mind. 10 Samples vorhanden sind!
+
+  docker exec email-ml-inference python3 /app/src/finetune_model.py
+
+Das Script:
+- Zeigt die Verteilung der Samples an
+- Erstellt automatisch ein Backup des alten Modells
+- Trainiert das Modell mit den neuen Daten
+- Testet das Ergebnis
+
+--------------------------------------------------------------------------------
+SCHRITT 4: Container neu starten
+--------------------------------------------------------------------------------
+
+Nach dem Fine-Tuning den Container neu starten:
+
+  docker compose -f /home/test/email-processor/docker-compose.yml restart ml-inference
+
+--------------------------------------------------------------------------------
+FALLS ETWAS SCHIEF GEHT
+--------------------------------------------------------------------------------
+
+Backup wiederherstellen:
+
+  docker exec email-ml-inference cp /app/models/emnist_cnn_backup.h5 /app/models/emnist_cnn.h5
+  docker compose -f /home/test/email-processor/docker-compose.yml restart ml-inference
+
+Alle Trainingssamples löschen und neu anfangen:
+
+  docker exec email-ml-inference rm -rf /app/training_data/*
+
+--------------------------------------------------------------------------------
+TIPPS
+--------------------------------------------------------------------------------
+
+- Lieber mehr Samples sammeln als zu wenig
+- Auf ausgewogene Verteilung achten (nicht 50x "1" und nur 5x "4")
+- Nach dem Fine-Tuning testen und ggf. weitere Samples hinzufügen
+- Das Fine-Tuning kann mehrfach ausgeführt werden
+
+================================================================================

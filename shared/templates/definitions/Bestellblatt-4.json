@@ -1,0 +1,2010 @@
+{
+  "form_type": "Bestellblatt-4",
+  "version": "1.0",
+  "extracted_from": "/app/templates/Bestellblatt-4.png",
+  "extraction_date": "2026-01-10T08:48:05.754084",
+  "image_dimensions": {
+    "width": 1241,
+    "height": 1754
+  },
+  "grid": {
+    "horizontal_lines": [
+      101,
+      127,
+      153,
+      188,
+      215,
+      241,
+      267,
+      293,
+      320,
+      346,
+      372,
+      398,
+      425,
+      451,
+      477,
+      503,
+      530,
+      556,
+      582,
+      608,
+      635,
+      661,
+      687,
+      713,
+      766,
+      792,
+      819,
+      845,
+      871,
+      897,
+      924,
+      950,
+      976,
+      1002,
+      1029,
+      1081,
+      1107,
+      1134,
+      1160,
+      1186,
+      1211
+    ],
+    "vertical_lines": [
+      36,
+      104,
+      469,
+      584,
+      698,
+      813,
+      927,
+      1042,
+      1109
+    ],
+    "row_count": 40,
+    "column_count": 8
+  },
+  "columns": {
+    "product_number": {
+      "index": 0,
+      "x_start": 36,
+      "x_end": 104,
+      "width": 68,
+      "type": "static"
+    },
+    "product_name": {
+      "index": 1,
+      "x_start": 104,
+      "x_end": 469,
+      "width": 365,
+      "type": "static"
+    },
+    "input_columns": [
+      {
+        "index": 2,
+        "name": "Mo",
+        "x_start": 469,
+        "x_end": 584,
+        "width": 115,
+        "type": "input"
+      },
+      {
+        "index": 3,
+        "name": "Di",
+        "x_start": 584,
+        "x_end": 698,
+        "width": 114,
+        "type": "input"
+      },
+      {
+        "index": 4,
+        "name": "Mi",
+        "x_start": 698,
+        "x_end": 813,
+        "width": 115,
+        "type": "input"
+      },
+      {
+        "index": 5,
+        "name": "Do",
+        "x_start": 813,
+        "x_end": 927,
+        "width": 114,
+        "type": "input"
+      },
+      {
+        "index": 6,
+        "name": "Fr",
+        "x_start": 927,
+        "x_end": 1042,
+        "width": 115,
+        "type": "input"
+      },
+      {
+        "index": 7,
+        "name": "Sa",
+        "x_start": 1042,
+        "x_end": 1109,
+        "width": 67,
+        "type": "input"
+      }
+    ]
+  },
+  "products": [
+    {
+      "row": 6,
+      "product_number": "170",
+      "product_name": "Mischsalat Fertigsalat  1kg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 267,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 267,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 267,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 267,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 267,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 267,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 267,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 267,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 7,
+      "product_number": "177",
+      "product_name": "Rüeblisalat 1kg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 293,
+        "width": 68,
+        "height": 27
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 293,
+        "width": 365,
+        "height": 27
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 293,
+          "width": 115,
+          "height": 27
+        },
+        "Di": {
+          "x": 584,
+          "y": 293,
+          "width": 114,
+          "height": 27
+        },
+        "Mi": {
+          "x": 698,
+          "y": 293,
+          "width": 115,
+          "height": 27
+        },
+        "Do": {
+          "x": 813,
+          "y": 293,
+          "width": 114,
+          "height": 27
+        },
+        "Fr": {
+          "x": 927,
+          "y": 293,
+          "width": 115,
+          "height": 27
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 293,
+          "width": 67,
+          "height": 27
+        }
+      }
+    },
+    {
+      "row": 8,
+      "product_number": "178",
+      "product_name": "Mais & rote Bohnen Salat 1kg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 320,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 320,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 320,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 320,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 320,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 320,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 320,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 320,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 9,
+      "product_number": "179",
+      "product_name": "Taboule 1kg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 346,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 346,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 346,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 346,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 346,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 346,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 346,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 346,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 10,
+      "product_number": "180",
+      "product_name": "Tomaten-Mozzarellasalat 1kg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 372,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 372,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 372,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 372,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 372,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 372,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 372,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 372,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 11,
+      "product_number": "181",
+      "product_name": "Griechischer Salat Ikg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 398,
+        "width": 68,
+        "height": 27
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 398,
+        "width": 365,
+        "height": 27
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 398,
+          "width": 115,
+          "height": 27
+        },
+        "Di": {
+          "x": 584,
+          "y": 398,
+          "width": 114,
+          "height": 27
+        },
+        "Mi": {
+          "x": 698,
+          "y": 398,
+          "width": 115,
+          "height": 27
+        },
+        "Do": {
+          "x": 813,
+          "y": 398,
+          "width": 114,
+          "height": 27
+        },
+        "Fr": {
+          "x": 927,
+          "y": 398,
+          "width": 115,
+          "height": 27
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 398,
+          "width": 67,
+          "height": 27
+        }
+      }
+    },
+    {
+      "row": 12,
+      "product_number": "182",
+      "product_name": "Bohnen-Fetasalat 1kg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 425,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 425,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 425,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 425,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 425,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 425,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 425,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 425,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 13,
+      "product_number": "183",
+      "product_name": "Rüebli geraffelt 1kg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 451,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 451,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 451,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 451,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 451,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 451,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 451,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 451,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 14,
+      "product_number": "189",
+      "product_name": "Nüsslisalat 400g",
+      "product_number_cell": {
+        "x": 36,
+        "y": 477,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 477,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 477,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 477,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 477,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 477,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 477,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 477,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 15,
+      "product_number": "220",
+      "product_name": "Rassige Tomatensuppe 3kg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 503,
+        "width": 68,
+        "height": 27
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 503,
+        "width": 365,
+        "height": 27
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 503,
+          "width": 115,
+          "height": 27
+        },
+        "Di": {
+          "x": 584,
+          "y": 503,
+          "width": 114,
+          "height": 27
+        },
+        "Mi": {
+          "x": 698,
+          "y": 503,
+          "width": 115,
+          "height": 27
+        },
+        "Do": {
+          "x": 813,
+          "y": 503,
+          "width": 114,
+          "height": 27
+        },
+        "Fr": {
+          "x": 927,
+          "y": 503,
+          "width": 115,
+          "height": 27
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 503,
+          "width": 67,
+          "height": 27
+        }
+      }
+    },
+    {
+      "row": 16,
+      "product_number": "221",
+      "product_name": "Rüebli-Zucchettisuppe 3kg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 530,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 530,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 530,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 530,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 530,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 530,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 530,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 530,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 17,
+      "product_number": "222",
+      "product_name": "Lauch-Specksuppe 3kg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 556,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 556,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 556,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 556,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 556,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 556,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 556,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 556,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 18,
+      "product_number": "224",
+      "product_name": "Kürbissuppe 3kg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 582,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 582,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 582,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 582,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 582,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 582,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 582,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 582,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 19,
+      "product_number": "225",
+      "product_name": "Broccolisuppe 3kg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 608,
+        "width": 68,
+        "height": 27
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 608,
+        "width": 365,
+        "height": 27
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 608,
+          "width": 115,
+          "height": 27
+        },
+        "Di": {
+          "x": 584,
+          "y": 608,
+          "width": 114,
+          "height": 27
+        },
+        "Mi": {
+          "x": 698,
+          "y": 608,
+          "width": 115,
+          "height": 27
+        },
+        "Do": {
+          "x": 813,
+          "y": 608,
+          "width": 114,
+          "height": 27
+        },
+        "Fr": {
+          "x": 927,
+          "y": 608,
+          "width": 115,
+          "height": 27
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 608,
+          "width": 67,
+          "height": 27
+        }
+      }
+    },
+    {
+      "row": 20,
+      "product_number": "226",
+      "product_name": "Weisse Spargelsuppe 3kg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 635,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 635,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 635,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 635,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 635,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 635,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 635,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 635,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 21,
+      "product_number": "",
+      "product_name": "",
+      "product_number_cell": {
+        "x": 36,
+        "y": 661,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 661,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 661,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 661,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 661,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 661,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 661,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 661,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 22,
+      "product_number": "",
+      "product_name": "",
+      "product_number_cell": {
+        "x": 36,
+        "y": 687,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 687,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 687,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 687,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 687,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 687,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 687,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 687,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 23,
+      "product_number": "",
+      "product_name": "",
+      "product_number_cell": {
+        "x": 36,
+        "y": 713,
+        "width": 68,
+        "height": 53
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 713,
+        "width": 365,
+        "height": 53
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 713,
+          "width": 115,
+          "height": 53
+        },
+        "Di": {
+          "x": 584,
+          "y": 713,
+          "width": 114,
+          "height": 53
+        },
+        "Mi": {
+          "x": 698,
+          "y": 713,
+          "width": 115,
+          "height": 53
+        },
+        "Do": {
+          "x": 813,
+          "y": 713,
+          "width": 114,
+          "height": 53
+        },
+        "Fr": {
+          "x": 927,
+          "y": 713,
+          "width": 115,
+          "height": 53
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 713,
+          "width": 67,
+          "height": 53
+        }
+      }
+    },
+    {
+      "row": 24,
+      "product_number": "",
+      "product_name": "\"GASTRO\" Haltbarkeit 4 Tage",
+      "product_number_cell": {
+        "x": 36,
+        "y": 766,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 766,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 766,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 766,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 766,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 766,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 766,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 766,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 25,
+      "product_number": "171",
+      "product_name": "Kartoffelsalat Ikg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 792,
+        "width": 68,
+        "height": 27
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 792,
+        "width": 365,
+        "height": 27
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 792,
+          "width": 115,
+          "height": 27
+        },
+        "Di": {
+          "x": 584,
+          "y": 792,
+          "width": 114,
+          "height": 27
+        },
+        "Mi": {
+          "x": 698,
+          "y": 792,
+          "width": 115,
+          "height": 27
+        },
+        "Do": {
+          "x": 813,
+          "y": 792,
+          "width": 114,
+          "height": 27
+        },
+        "Fr": {
+          "x": 927,
+          "y": 792,
+          "width": 115,
+          "height": 27
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 792,
+          "width": 67,
+          "height": 27
+        }
+      }
+    },
+    {
+      "row": 26,
+      "product_number": "172",
+      "product_name": "Hörnlisalat ohne Thon 1kg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 819,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 819,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 819,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 819,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 819,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 819,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 819,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 819,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 27,
+      "product_number": "173",
+      "product_name": "Hörnlisalat mit Thon 1kg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 845,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 845,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 845,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 845,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 845,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 845,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 845,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 845,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 28,
+      "product_number": "174",
+      "product_name": "Reissalat Ikg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 871,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 871,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 871,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 871,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 871,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 871,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 871,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 871,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 29,
+      "product_number": "175",
+      "product_name": "Cervelatssalat 1kg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 897,
+        "width": 68,
+        "height": 27
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 897,
+        "width": 365,
+        "height": 27
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 897,
+          "width": 115,
+          "height": 27
+        },
+        "Di": {
+          "x": 584,
+          "y": 897,
+          "width": 114,
+          "height": 27
+        },
+        "Mi": {
+          "x": 698,
+          "y": 897,
+          "width": 115,
+          "height": 27
+        },
+        "Do": {
+          "x": 813,
+          "y": 897,
+          "width": 114,
+          "height": 27
+        },
+        "Fr": {
+          "x": 927,
+          "y": 897,
+          "width": 115,
+          "height": 27
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 897,
+          "width": 67,
+          "height": 27
+        }
+      }
+    },
+    {
+      "row": 30,
+      "product_number": "176",
+      "product_name": "Pouletsalat 1kg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 924,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 924,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 924,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 924,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 924,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 924,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 924,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 924,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 31,
+      "product_number": "184",
+      "product_name": "Hawaii Ikg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 950,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 950,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 950,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 950,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 950,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 950,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 950,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 950,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 32,
+      "product_number": "186",
+      "product_name": "Selleriesalat Ikg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 976,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 976,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 976,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 976,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 976,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 976,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 976,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 976,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 33,
+      "product_number": "187",
+      "product_name": "Müscheli-Schinkensalat 1kg",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1002,
+        "width": 68,
+        "height": 27
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 1002,
+        "width": 365,
+        "height": 27
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 1002,
+          "width": 115,
+          "height": 27
+        },
+        "Di": {
+          "x": 584,
+          "y": 1002,
+          "width": 114,
+          "height": 27
+        },
+        "Mi": {
+          "x": 698,
+          "y": 1002,
+          "width": 115,
+          "height": 27
+        },
+        "Do": {
+          "x": 813,
+          "y": 1002,
+          "width": 114,
+          "height": 27
+        },
+        "Fr": {
+          "x": 927,
+          "y": 1002,
+          "width": 115,
+          "height": 27
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 1002,
+          "width": 67,
+          "height": 27
+        }
+      }
+    },
+    {
+      "row": 34,
+      "product_number": "",
+      "product_name": "Salatsaucen Sdl PET-Flaschen Haltbarkeit min",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1029,
+        "width": 68,
+        "height": 52
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 1029,
+        "width": 365,
+        "height": 52
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 1029,
+          "width": 115,
+          "height": 52
+        },
+        "Di": {
+          "x": 584,
+          "y": 1029,
+          "width": 114,
+          "height": 52
+        },
+        "Mi": {
+          "x": 698,
+          "y": 1029,
+          "width": 115,
+          "height": 52
+        },
+        "Do": {
+          "x": 813,
+          "y": 1029,
+          "width": 114,
+          "height": 52
+        },
+        "Fr": {
+          "x": 927,
+          "y": 1029,
+          "width": 115,
+          "height": 52
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 1029,
+          "width": 67,
+          "height": 52
+        }
+      }
+    },
+    {
+      "row": 35,
+      "product_number": "110",
+      "product_name": "French mit Kräutern",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1081,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 1081,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 1081,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 1081,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 1081,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 1081,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 1081,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 1081,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 36,
+      "product_number": "111",
+      "product_name": "Balsamico Dressing",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1107,
+        "width": 68,
+        "height": 27
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 1107,
+        "width": 365,
+        "height": 27
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 1107,
+          "width": 115,
+          "height": 27
+        },
+        "Di": {
+          "x": 584,
+          "y": 1107,
+          "width": 114,
+          "height": 27
+        },
+        "Mi": {
+          "x": 698,
+          "y": 1107,
+          "width": 115,
+          "height": 27
+        },
+        "Do": {
+          "x": 813,
+          "y": 1107,
+          "width": 114,
+          "height": 27
+        },
+        "Fr": {
+          "x": 927,
+          "y": 1107,
+          "width": 115,
+          "height": 27
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 1107,
+          "width": 67,
+          "height": 27
+        }
+      }
+    },
+    {
+      "row": 37,
+      "product_number": "112",
+      "product_name": "Curry Mango Dressing",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1134,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 1134,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 1134,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 1134,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 1134,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 1134,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 1134,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 1134,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 38,
+      "product_number": "113",
+      "product_name": "Chili Paprika Dressing",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1160,
+        "width": 68,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 1160,
+        "width": 365,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 1160,
+          "width": 115,
+          "height": 26
+        },
+        "Di": {
+          "x": 584,
+          "y": 1160,
+          "width": 114,
+          "height": 26
+        },
+        "Mi": {
+          "x": 698,
+          "y": 1160,
+          "width": 115,
+          "height": 26
+        },
+        "Do": {
+          "x": 813,
+          "y": 1160,
+          "width": 114,
+          "height": 26
+        },
+        "Fr": {
+          "x": 927,
+          "y": 1160,
+          "width": 115,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 1160,
+          "width": 67,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 39,
+      "product_number": "114",
+      "product_name": "Sent Honig Dressing",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1186,
+        "width": 68,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 104,
+        "y": 1186,
+        "width": 365,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 469,
+          "y": 1186,
+          "width": 115,
+          "height": 25
+        },
+        "Di": {
+          "x": 584,
+          "y": 1186,
+          "width": 114,
+          "height": 25
+        },
+        "Mi": {
+          "x": 698,
+          "y": 1186,
+          "width": 115,
+          "height": 25
+        },
+        "Do": {
+          "x": 813,
+          "y": 1186,
+          "width": 114,
+          "height": 25
+        },
+        "Fr": {
+          "x": 927,
+          "y": 1186,
+          "width": 115,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1042,
+          "y": 1186,
+          "width": 67,
+          "height": 25
+        }
+      }
+    }
+  ],
+  "empty_cell_threshold": {
+    "variance": 50,
+    "white_ratio": 0.95
+  }
+}

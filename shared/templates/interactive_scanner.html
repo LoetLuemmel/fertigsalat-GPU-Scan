@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktiver Bestellungs-Scanner</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            padding-right: 10px;
+            background: #1a1a2e;
+            color: #eee;
+            overflow-x: hidden;
+        }
+        h1 { color: #00d4ff; margin-bottom: 10px; }
+        .container {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            margin: 0;
+        }
+        .image-panel {
+            flex: 0 0 auto;
+            position: relative;
+        }
+        .sidebar {
+            flex: 1;
+            min-width: 450px;
+            position: sticky;
+            top: 10px;
+            align-self: flex-start;
+            max-height: 95vh;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .sidebar::-webkit-scrollbar-track {
+            background: #1a1a2e;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #0f4c75;
+            border-radius: 4px;
+        }
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #00d4ff;
+        }
+        #canvasContainer {
+            position: relative;
+            display: inline-block;
+            border: 2px solid #333;
+            background: #000;
+            overflow: auto;
+            max-height: 85vh;
+        }
+        #mainCanvas {
+            display: block;
+            cursor: crosshair;
+        }
+        .panel {
+            background: #16213e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .panel h3 {
+            margin: 0 0 15px 0;
+            color: #00d4ff;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            font-size: 18px;
+        }
+        .btn {
+            background: #0f4c75;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px 5px 5px 0;
+            display: inline-block;
+            transition: box-shadow 0.3s;
+        }
+        .btn:hover { background: #1a6fa8; }
+        .btn:disabled { background: #333; cursor: not-allowed; animation: none !important; box-shadow: none !important; }
+        .btn.primary { background: #00d4ff; color: #000; font-weight: bold; }
+        .btn.primary:hover { background: #00a8cc; }
+        .btn.success { background: #28a745; }
+        .btn.danger { background: #dc3545; }
+        .btn.small { padding: 8px 14px; font-size: 14px; }
+
+        /* Blinking button for user guidance */
+        .btn.guide-blink {
+            animation: btnBlink 1.2s ease-in-out infinite;
+        }
+        @keyframes btnBlink {
+            0%, 100% {
+                box-shadow: 0 0 5px rgba(0, 212, 255, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(0, 212, 255, 1), 0 0 40px rgba(0, 212, 255, 0.7), 0 0 60px rgba(0, 212, 255, 0.4);
+            }
+        }
+        .btn.primary.guide-blink {
+            animation: btnBlinkPrimary 1.2s ease-in-out infinite;
+        }
+        @keyframes btnBlinkPrimary {
+            0%, 100% {
+                box-shadow: 0 0 5px rgba(0, 255, 200, 0.5);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 25px rgba(0, 255, 200, 1), 0 0 50px rgba(0, 255, 200, 0.7);
+                transform: scale(1.02);
+            }
+        }
+        .btn.success.guide-blink {
+            animation: btnBlinkSuccess 1.2s ease-in-out infinite;
+        }
+        @keyframes btnBlinkSuccess {
+            0%, 100% {
+                box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 25px rgba(40, 167, 69, 1), 0 0 50px rgba(40, 167, 69, 0.7);
+                transform: scale(1.02);
+            }
+        }
+
+        /* Results table */
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px;
+        }
+        .results-table th, .results-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        .results-table th { color: #00d4ff; font-size: 14px; }
+        .results-table tr:hover { background: rgba(0, 212, 255, 0.1); }
+        .results-table tr.selected { background: rgba(0, 212, 255, 0.3); }
+        .results-table tr.highlighted {
+            background: rgba(0, 255, 255, 0.4) !important;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        .results-table .quantity-input {
+            background: #1a5a8a;
+            border: 2px solid #00d4ff;
+            color: #fff;
+            width: 55px;
+            text-align: center;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: text;
+        }
+        .results-table .quantity-input:hover {
+            background: #2070a0;
+            border-color: #00ffff;
+        }
+        .results-table .quantity-input:focus {
+            outline: none;
+            background: #2080b0;
+            border-color: #00ffff;
+            box-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+        }
+
+        /* Review modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #16213e;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 500px;
+        }
+        .review-image {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        .review-image img {
+            max-width: 250px;
+            max-height: 120px;
+            image-rendering: pixelated;
+        }
+        .digit-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .digit-btn {
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            font-weight: bold;
+            border: 2px solid #00d4ff;
+            background: transparent;
+            color: #00d4ff;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .digit-btn:hover {
+            background: #00d4ff;
+            color: #000;
+        }
+
+        /* Stats */
+        .stats {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .stat-box {
+            background: #0f4c75;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            flex: 1;
+            min-width: 90px;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+        .stat-label {
+            font-size: 13px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            background: #0f4c75;
+            font-size: 13px;
+            transition: background-color 0.3s;
+        }
+        .status.active {
+            animation: blink 1s ease-in-out infinite;
+        }
+        @keyframes blink {
+            0%, 100% { background: #0f4c75; }
+            50% { background: #1a8cff; }
+        }
+
+        /* Progress bar styles */
+        .progress-container {
+            display: none;
+            margin-top: 10px;
+            background: #0a3d62;
+            border-radius: 8px;
+            padding: 12px;
+        }
+        .progress-container.active {
+            display: block;
+        }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .progress-step {
+            color: #00d4ff;
+            font-weight: bold;
+        }
+        .progress-percent {
+            color: #fff;
+            font-weight: bold;
+        }
+        .progress-bar-outer {
+            background: #1a1a2e;
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .progress-bar-inner {
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            height: 100%;
+            width: 0%;
+            border-radius: 10px;
+            transition: width 0.3s ease-out;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+        .progress-detail {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .instructions {
+            background: #0a3d62;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .instructions strong { color: #00d4ff; }
+
+        .mode-indicator {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .mode-zone { background: #e74c3c; }
+        .mode-review { background: #27ae60; }
+    </style>
+</head>
+<body>
+    <header style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <img src="/fertigsalat_Logo.png" alt="Fertigsalat Logo" style="height: 50px;">
+            <h1 style="margin: 0;">Interaktiver Bestellungs-Scanner <span class="mode-indicator" id="modeIndicator">Modus: Zone definieren</span></h1>
+        </div>
+        <div id="gpuStatus" style="display: flex; align-items: center; gap: 8px; padding: 8px 15px; border-radius: 5px; background: #333; font-size: 14px;">
+            <span id="gpuIndicator" style="width: 12px; height: 12px; border-radius: 50%; background: #666;"></span>
+            <span id="gpuLabel">GPU: Prüfe...</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="image-panel">
+            <div class="panel">
+                <h3>Dokument</h3>
+                <div class="instructions" id="instructions">
+                    <strong>Schritt 1:</strong> Klicken Sie "Datei laden" und wählen Sie eine .eml-Datei oder ein Bild aus. Bei E-Mails werden Anhänge automatisch extrahiert.
+                </div>
+                <div id="canvasContainer">
+                    <canvas id="mainCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="panel">
+                <h3>Steuerung</h3>
+                <input type="file" id="fileInput" accept="image/*,.eml" style="display:none" onchange="handleFileSelect(this)">
+                <button class="btn primary guide-blink" id="loadFileBtn" onclick="document.getElementById('fileInput').click()">1. Datei laden</button>
+                <button class="btn danger" onclick="clearAllZones()">Alle Zonen löschen</button>
+                <button class="btn" onclick="autoDetectZones()" id="autoDetectBtn" style="background:#9b59b6;">Zone auto-erkennen</button>
+                <br>
+                <button class="btn success" onclick="scanZone()" id="scanBtn" disabled>2. Zone scannen</button>
+                <button class="btn" onclick="reviewNext()" id="reviewBtn" disabled>Nächstes prüfen</button>
+            </div>
+
+            <div class="panel">
+                <h3>Zonen definieren</h3>
+                <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Klicken Sie einen Button und zeichnen Sie die Zone im Bild:</p>
+                <button class="btn zone-btn" id="btnZoneOrders" onclick="setActiveZone('orders')" style="background:#00d4ff; color:#000;">Bestellmengen (Mo-Fr)</button>
+                <button class="btn zone-btn" id="btnZoneNames" onclick="setActiveZone('names')" style="background:#00ff00; color:#000;">Produktnamen</button>
+                <button class="btn zone-btn" id="btnZoneCodes" onclick="setActiveZone('codes')" style="background:#ff9800; color:#000;">Produktnummern</button>
+                <div id="activeZoneInfo" style="margin-top:10px; padding:8px; background:#0a3d62; border-radius:5px; font-size:12px;">
+                    Aktiv: <strong id="activeZoneName">Bestellmengen</strong>
+                </div>
+            </div>
+
+            <div class="panel" id="zonePanel" style="display:none;">
+                <h3>Zonen-Status</h3>
+                <div id="zoneInfo"></div>
+                <div style="margin-top:15px; font-size:15px;">
+                    <label>Zeilen: <input type="number" id="numRows" value="52" min="1" max="100" style="width:60px; padding:6px; font-size:15px; background:#0f4c75; color:#fff; border:1px solid #00d4ff; border-radius:4px;"></label>
+                    <label style="margin-left:15px;">Spalten: <input type="number" id="numCols" value="5" min="1" max="10" style="width:60px; padding:6px; font-size:15px; background:#0f4c75; color:#fff; border:1px solid #00d4ff; border-radius:4px;"></label>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3>Statistik</h3>
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-value" id="statTotal">0</div>
+                        <div class="stat-label">Erkannt</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="statReviewed">0</div>
+                        <div class="stat-label">Geprüft</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="statPending">0</div>
+                        <div class="stat-label">Offen</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3>Erkannte Bestellungen (<span id="orderCount">0</span>)</h3>
+                <div>
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Menge</th>
+                                <th>Produktname</th>
+                                <th>Produkt-Nr.</th>
+                                <th>Tag</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsBody">
+                            <tr><td colspan="5" style="text-align:center;color:#666;">Noch keine Ergebnisse</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <button class="btn success" onclick="exportResults()" style="margin-top:10px;">Export JSON</button>
+            </div>
+
+            <div class="panel">
+                <h3>Training Status</h3>
+                <div id="trainingStats" style="font-size: 12px; color: #aaa;">Lade...</div>
+                <button class="btn small" onclick="loadTrainingStats()" style="margin-top: 8px;">Aktualisieren</button>
+            </div>
+
+            <div class="panel">
+                <div class="status" id="status">Bereit. Klicke "Datei laden" um eine E-Mail (.eml) oder ein Bild zu öffnen.</div>
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-header">
+                        <span class="progress-step" id="progressStep">Schritt 1/7</span>
+                        <span class="progress-percent" id="progressPercent">0%</span>
+                    </div>
+                    <div class="progress-bar-outer">
+                        <div class="progress-bar-inner" id="progressBar"></div>
+                    </div>
+                    <div class="progress-detail" id="progressDetail">Starte Verarbeitung...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attachment Selection Modal -->
+    <div class="modal" id="attachmentModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <h3>Anhang auswählen</h3>
+            <p id="emlInfo" style="color: #aaa; font-size: 13px;"></p>
+            <div id="attachmentList" style="max-height: 400px; overflow-y: auto; margin: 20px 0;"></div>
+            <button class="btn" onclick="closeAttachmentModal()">Abbrechen</button>
+        </div>
+    </div>
+
+    <!-- Review Modal -->
+    <div class="modal" id="reviewModal">
+        <div class="modal-content">
+            <h3>Zeichen identifizieren</h3>
+            <p id="reviewContext">Zeile X, Spalte Y</p>
+            <div class="review-image">
+                <img id="reviewImage" src="" alt="Zeichen">
+            </div>
+            <p>Welche Ziffer ist das?</p>
+            <div class="digit-buttons">
+                <button class="digit-btn" onclick="setDigit('1')">1</button>
+                <button class="digit-btn" onclick="setDigit('2')">2</button>
+                <button class="digit-btn" onclick="setDigit('3')">3</button>
+                <button class="digit-btn" onclick="setDigit('4')">4</button>
+                <button class="digit-btn" onclick="setDigit('5')">5</button>
+                <button class="digit-btn" onclick="setDigit('6')">6</button>
+                <button class="digit-btn" onclick="setDigit('7')">7</button>
+                <button class="digit-btn" onclick="setDigit('8')">8</button>
+                <button class="digit-btn" onclick="setDigit('9')">9</button>
+                <button class="digit-btn" onclick="setDigit('0')">0</button>
+            </div>
+            <div>
+                <button class="btn danger" onclick="setDigit('empty')">Leer / Kein Zeichen</button>
+                <button class="btn" onclick="closeModal()">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let image = null;
+        let imageData = null;
+
+        // Three separate zones
+        let zones = {
+            orders: null,  // Bestellmengen (Mo-Fr) - cyan
+            names: null,   // Produktnamen - green
+            codes: null    // Produktnummern - orange
+        };
+        let activeZone = 'orders';  // Currently selected zone for drawing
+
+        let isDrawing = false;
+        let drawStart = null;
+        let results = [];
+        let currentReviewIndex = -1;
+        let highlightedResultIndex = -1;
+        let highlightPulse = 0;  // For pulsing animation
+        let highlightAnimationId = null;
+
+        // Start highlight animation
+        function startHighlightAnimation() {
+            if (highlightAnimationId) return;
+            function animate() {
+                highlightPulse = (highlightPulse + 0.15) % (Math.PI * 2);
+                if (highlightedResultIndex >= 0) {
+                    redraw();
+                    highlightAnimationId = requestAnimationFrame(animate);
+                } else {
+                    highlightAnimationId = null;
+                }
+            }
+            highlightAnimationId = requestAnimationFrame(animate);
+        }
+
+        function stopHighlightAnimation() {
+            if (highlightAnimationId) {
+                cancelAnimationFrame(highlightAnimationId);
+                highlightAnimationId = null;
+            }
+        }
+
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+        const COLUMNS = ['Mo', 'Di', 'Mi', 'Do', 'Fr'];
+
+        const ZONE_COLORS = {
+            orders: { stroke: '#00d4ff', fill: 'rgba(0, 212, 255, 0.1)', name: 'Bestellmengen' },
+            names: { stroke: '#00ff00', fill: 'rgba(0, 255, 0, 0.1)', name: 'Produktnamen' },
+            codes: { stroke: '#ff9800', fill: 'rgba(255, 152, 0, 0.1)', name: 'Produktnummern' }
+        };
+
+        // Canvas event handlers
+        canvas.addEventListener('mousedown', startDraw);
+        canvas.addEventListener('mousemove', drawing);
+        canvas.addEventListener('mouseup', endDraw);
+        canvas.addEventListener('mouseleave', endDraw);
+        canvas.addEventListener('click', handleCanvasClick);
+
+        function handleFileSelect(input) {
+            if (!input.files || !input.files[0]) return;
+
+            const file = input.files[0];
+
+            if (file.name.toLowerCase().endsWith('.eml')) {
+                loadEmlFile(file);
+            } else {
+                loadImageFile(file);
+            }
+
+            // Reset file input so the same file can be selected again
+            input.value = '';
+        }
+
+        function loadImageFile(file) {
+            setStatus('Lade Bild: ' + file.name);
+
+            // Revoke previous URL if exists
+            if (imageData) {
+                URL.revokeObjectURL(imageData);
+            }
+
+            imageData = URL.createObjectURL(file);
+
+            image = new Image();
+            image.onload = function() {
+                canvas.width = image.width;
+                canvas.height = image.height;
+
+                // Auto-detect zone based on template coordinates
+                suggestZone();
+
+                redraw();
+                setStatus('Bild geladen: ' + file.name + '. Klicken Sie "Zone auto-erkennen".');
+                setMode('zone');
+                setGuideStep('detect');  // Highlight auto-detect button
+                document.getElementById('instructions').innerHTML =
+                    '<strong>Schritt 2:</strong> Klicken Sie auf "Zone auto-erkennen" um die Tabellenbereiche automatisch zu erkennen.';
+            };
+            image.onerror = function() {
+                setStatus('Fehler: Datei konnte nicht als Bild geladen werden.');
+            };
+            image.src = imageData;
+        }
+
+        async function loadEmlFile(file) {
+            setStatus('Verarbeite E-Mail: ' + file.name, true);
+
+            // Progress indicator during server processing
+            const progressSteps = [
+                { text: 'Sende an Server...', detail: 'Datei wird hochgeladen', duration: 500 },
+                { text: 'Extrahiere PDF-Anhänge...', detail: 'E-Mail wird analysiert', duration: 800 },
+                { text: 'Konvertiere PDF zu Bild...', detail: '300 DPI Auflösung', duration: 1200 },
+                { text: 'Erkenne Dokumentausrichtung...', detail: 'OCR-basierte Analyse', duration: 2000 },
+                { text: 'Korrigiere Orientierung...', detail: 'Automatische Drehung', duration: 1000 },
+                { text: 'Wende Deskew an...', detail: 'Linien-Erkennung für Ausrichtung', duration: 1500 },
+                { text: 'Optimiere Bild...', detail: 'Finale Bildverarbeitung', duration: 5000 }
+            ];
+
+            let currentStep = 0;
+            let currentPercent = 0;
+            let targetPercent = 0;
+            let simulatedPercent = 0;
+            showProgress(true);
+            updateProgress(0, progressSteps[0].text, progressSteps[0].detail, 1, progressSteps.length);
+
+            // Calculate percent ranges for each step
+            const stepPercents = progressSteps.map((_, i) => Math.round(((i + 1) / progressSteps.length) * 90));
+
+            // Smooth progress animation - updates every 100ms
+            const smoothInterval = setInterval(() => {
+                if (simulatedPercent < targetPercent) {
+                    simulatedPercent = Math.min(simulatedPercent + 1, targetPercent);
+                    const bar = document.getElementById('progressBar');
+                    const percentEl = document.getElementById('progressPercent');
+                    if (bar) bar.style.width = simulatedPercent + '%';
+                    if (percentEl) percentEl.textContent = simulatedPercent + '%';
+                }
+            }, 100);
+
+            // Step progression
+            const progressInterval = setInterval(() => {
+                if (currentStep < progressSteps.length - 1) {
+                    currentStep++;
+                    targetPercent = stepPercents[currentStep];
+                    updateProgress(
+                        simulatedPercent,
+                        progressSteps[currentStep].text,
+                        progressSteps[currentStep].detail,
+                        currentStep + 1,
+                        progressSteps.length
+                    );
+                } else {
+                    // On last step, slowly increment to simulate ongoing work
+                    if (targetPercent < 92) {
+                        targetPercent += 1;
+                        const subSteps = ['Analysiere Struktur...', 'Optimiere Kontrast...', 'Bereinige Ränder...', 'Finalisiere...'];
+                        const subStep = subSteps[Math.floor((targetPercent - 77) / 4) % subSteps.length];
+                        document.getElementById('progressDetail').textContent = subStep;
+                    }
+                }
+            }, 800);
+
+            try {
+                // Send file directly as FormData
+                targetPercent = 5;
+                updateProgress(5, progressSteps[0].text, 'Übertrage Datei...', 1, progressSteps.length);
+                const formData = new FormData();
+                formData.append('emlFile', file);
+
+                const response = await fetch('/api/parse-eml', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                clearInterval(progressInterval);
+                clearInterval(smoothInterval);
+                updateProgress(95, 'Verarbeite Antwort...', 'Server-Antwort wird analysiert', progressSteps.length, progressSteps.length);
+                const text = await response.text();
+
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (parseErr) {
+                    console.error('Server response:', text);
+                    showProgress(false);
+                    setStatus('Server-Fehler: Ungültige Antwort');
+                    return;
+                }
+
+                if (data.error) {
+                    showProgress(false);
+                    setStatus('Fehler: ' + data.error);
+                    return;
+                }
+
+                const attachments = data.attachments || [];
+
+                if (attachments.length === 0) {
+                    showProgress(false);
+                    setStatus('Keine Bild- oder PDF-Anhänge in der E-Mail gefunden.');
+                    return;
+                }
+
+                updateProgress(100, 'Fertig!', 'Bild wurde erfolgreich verarbeitet', progressSteps.length, progressSteps.length);
+                setTimeout(() => showProgress(false), 500);
+
+                if (attachments.length === 1) {
+                    // Single attachment - load directly
+                    loadAttachmentImage(attachments[0]);
+                } else {
+                    // Multiple attachments - show selection dialog
+                    showAttachmentSelection(data.metadata, attachments);
+                }
+
+            } catch (err) {
+                clearInterval(progressInterval);
+                clearInterval(smoothInterval);
+                showProgress(false);
+                console.error('EML Error:', err);
+                setStatus('Fehler beim Verarbeiten der E-Mail: ' + err.message);
+            }
+        }
+
+        function showAttachmentSelection(metadata, attachments) {
+            const emlInfo = document.getElementById('emlInfo');
+            emlInfo.innerHTML = `
+                <strong>Betreff:</strong> ${metadata.subject || '(kein Betreff)'}<br>
+                <strong>Von:</strong> ${metadata.from || '(unbekannt)'}<br>
+                <strong>Datum:</strong> ${metadata.date || '(unbekannt)'}
+            `;
+
+            const list = document.getElementById('attachmentList');
+            list.innerHTML = attachments.map((att, i) => `
+                <div style="background: #0f4c75; padding: 15px; margin: 10px 0; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 15px;"
+                     onclick="selectAttachment(${i})"
+                     onmouseover="this.style.background='#1a6fa8'"
+                     onmouseout="this.style.background='#0f4c75'">
+                    <div style="font-size: 24px;">${att.is_pdf ? '📄' : '🖼️'}</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: bold;">${att.filename}</div>
+                        <div style="font-size: 12px; color: #aaa;">
+                            ${att.is_pdf ? 'PDF-Dokument' : 'Bild'} • ${Math.round(att.size / 1024)} KB
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Store attachments for selection
+            window.pendingAttachments = attachments;
+
+            document.getElementById('attachmentModal').classList.add('active');
+            setStatus(`${attachments.length} Anhänge gefunden. Bitte wählen Sie einen aus.`);
+        }
+
+        function selectAttachment(index) {
+            const attachment = window.pendingAttachments[index];
+            closeAttachmentModal();
+            loadAttachmentImage(attachment);
+        }
+
+        function closeAttachmentModal() {
+            document.getElementById('attachmentModal').classList.remove('active');
+            window.pendingAttachments = null;
+        }
+
+        function loadAttachmentImage(attachment) {
+            if (!attachment.data) {
+                setStatus('Fehler: Anhang konnte nicht konvertiert werden.');
+                return;
+            }
+
+            setStatus('Lade Anhang: ' + attachment.filename, true);
+
+            // Revoke previous URL if exists
+            if (imageData && imageData.startsWith('blob:')) {
+                URL.revokeObjectURL(imageData);
+            }
+
+            imageData = attachment.data;
+
+            // Build processing status message
+            let processingMsg = '';
+            if (attachment.processing) {
+                const p = attachment.processing;
+                if (p.orientation_corrected) {
+                    processingMsg += `Orientierung korrigiert (${p.orientation_angle}°). `;
+                }
+                if (p.deskew_applied) {
+                    processingMsg += `Deskew angewendet (${p.deskew_angle}°). `;
+                }
+                if (!p.orientation_corrected && !p.deskew_applied) {
+                    processingMsg = 'Keine Korrektur nötig. ';
+                }
+            }
+
+            image = new Image();
+            image.onload = function() {
+                canvas.width = image.width;
+                canvas.height = image.height;
+
+                // Auto-detect zone based on template coordinates
+                suggestZone();
+
+                redraw();
+                const statusMsg = processingMsg + 'Anhang geladen: ' + attachment.filename + '. Klicken Sie "Zone auto-erkennen".';
+                setStatus(statusMsg);
+                setMode('zone');
+                setGuideStep('detect');  // Highlight auto-detect button
+                document.getElementById('instructions').innerHTML =
+                    '<strong>Schritt 2:</strong> Klicken Sie auf "Zone auto-erkennen" um die Tabellenbereiche automatisch zu erkennen.';
+            };
+            image.onerror = function() {
+                setStatus('Fehler: Anhang konnte nicht als Bild geladen werden.');
+            };
+            image.src = imageData;
+        }
+
+        function setActiveZone(zoneName) {
+            activeZone = zoneName;
+            document.getElementById('activeZoneName').textContent = ZONE_COLORS[zoneName].name;
+            document.getElementById('activeZoneName').style.color = ZONE_COLORS[zoneName].stroke;
+
+            // Update button styles
+            document.querySelectorAll('.zone-btn').forEach(btn => {
+                btn.style.opacity = '0.5';
+                btn.style.border = 'none';
+            });
+            const activeBtn = document.getElementById('btnZone' + zoneName.charAt(0).toUpperCase() + zoneName.slice(1));
+            if (activeBtn) {
+                activeBtn.style.opacity = '1';
+                activeBtn.style.border = '3px solid white';
+            }
+
+            setStatus(`Zone "${ZONE_COLORS[zoneName].name}" ausgewählt. Zeichnen Sie im Bild.`);
+        }
+
+        function suggestZone() {
+            // Don't auto-suggest - let user draw all three zones manually
+            setStatus('Bild geladen. Wählen Sie eine Zone und zeichnen Sie sie im Bild.');
+            setActiveZone('orders');
+            document.getElementById('zonePanel').style.display = 'block';
+            updateZoneInfo();
+        }
+
+        function startDraw(e) {
+            if (!image) return;
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            drawStart = {
+                x: (e.clientX - rect.left) * scaleX,
+                y: (e.clientY - rect.top) * scaleY
+            };
+        }
+
+        function drawing(e) {
+            if (!isDrawing || !drawStart) return;
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const currentX = (e.clientX - rect.left) * scaleX;
+            const currentY = (e.clientY - rect.top) * scaleY;
+
+            // Update the active zone
+            zones[activeZone] = {
+                x: Math.min(drawStart.x, currentX),
+                y: Math.min(drawStart.y, currentY),
+                width: Math.abs(currentX - drawStart.x),
+                height: Math.abs(currentY - drawStart.y)
+            };
+            redraw();
+        }
+
+        function endDraw(e) {
+            if (isDrawing && zones[activeZone] && zones[activeZone].width > 10 && zones[activeZone].height > 10) {
+                updateZoneInfo();
+                checkScanReady();
+                setStatus(`Zone "${ZONE_COLORS[activeZone].name}" definiert.`);
+            }
+            isDrawing = false;
+        }
+
+        function handleCanvasClick(e) {
+            if (isDrawing || results.length === 0) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const clickX = (e.clientX - rect.left) * scaleX;
+            const clickY = (e.clientY - rect.top) * scaleY;
+
+            // Check if click is inside any result blob
+            let clickedIndex = -1;
+            for (let i = 0; i < results.length; i++) {
+                const r = results[i];
+                if (clickX >= r.x && clickX <= r.x + r.width &&
+                    clickY >= r.y && clickY <= r.y + r.height) {
+                    clickedIndex = i;
+                    break;
+                }
+            }
+
+            if (clickedIndex !== -1) {
+                highlightedResultIndex = clickedIndex;
+                highlightResultRow(clickedIndex);
+                startHighlightAnimation();
+            } else {
+                // Click outside - clear highlight
+                highlightedResultIndex = -1;
+                clearRowHighlight();
+                stopHighlightAnimation();
+                redraw();
+            }
+        }
+
+        function highlightResultRow(index) {
+            // Find the table row with matching data-index
+            const rows = document.querySelectorAll('#resultsBody tr');
+            rows.forEach((row) => {
+                row.classList.remove('highlighted');
+                // Check if this row matches our result index
+                if (parseInt(row.dataset.index) === index) {
+                    row.classList.add('highlighted');
+                    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Focus the quantity input field
+                    const input = row.querySelector('.quantity-input');
+                    if (input) {
+                        setTimeout(() => {
+                            input.focus();
+                            input.select();
+                        }, 100);
+                    }
+                }
+            });
+        }
+
+        function clearRowHighlight() {
+            const rows = document.querySelectorAll('#resultsBody tr');
+            rows.forEach(row => row.classList.remove('highlighted'));
+        }
+
+        function selectResultRow(index) {
+            // Highlight the blob on the canvas
+            highlightedResultIndex = index;
+            startHighlightAnimation();
+
+            // Highlight the row in the table
+            const rows = document.querySelectorAll('#resultsBody tr');
+            rows.forEach((row) => {
+                row.classList.remove('highlighted');
+                if (parseInt(row.dataset.index) === index) {
+                    row.classList.add('highlighted');
+                }
+            });
+
+            // Focus the quantity input
+            const r = results[index];
+            if (r) {
+                const row = document.querySelector(`#resultsBody tr[data-index="${index}"]`);
+                if (row) {
+                    const input = row.querySelector('.quantity-input');
+                    if (input) {
+                        setTimeout(() => {
+                            input.focus();
+                            input.select();
+                        }, 100);
+                    }
+                }
+            }
+        }
+
+        function updateZoneInfo() {
+            let html = '';
+            for (const [key, color] of Object.entries(ZONE_COLORS)) {
+                const z = zones[key];
+                if (z) {
+                    html += `<div style="color:${color.stroke}; margin:5px 0;">✓ ${color.name}: ${Math.round(z.width)}x${Math.round(z.height)}</div>`;
+                } else {
+                    html += `<div style="color:#666; margin:5px 0;">○ ${color.name}: nicht definiert</div>`;
+                }
+            }
+            document.getElementById('zoneInfo').innerHTML = html;
+        }
+
+        function checkScanReady() {
+            // Enable scan if at least orders zone is defined
+            const ready = zones.orders !== null;
+            document.getElementById('scanBtn').disabled = !ready;
+            document.getElementById('zonePanel').style.display = 'block';
+        }
+
+        function clearAllZones() {
+            zones = { orders: null, names: null, codes: null };
+            results = [];
+            document.getElementById('scanBtn').disabled = true;
+            document.getElementById('reviewBtn').disabled = true;
+            document.getElementById('resultsBody').innerHTML =
+                '<tr><td colspan="5" style="text-align:center;color:#666;">Noch keine Ergebnisse</td></tr>';
+            updateStats();
+            updateZoneInfo();
+            redraw();
+            setStatus('Alle Zonen gelöscht. Klicken Sie "Zone auto-erkennen".');
+            setMode('zone');
+            if (image) {
+                setGuideStep('detect');  // If image loaded, guide to auto-detect
+            } else {
+                setGuideStep('load');  // Otherwise guide to load file
+            }
+        }
+
+        async function autoDetectZones() {
+            if (!image) {
+                setStatus('Bitte zuerst ein Dokument laden.');
+                return;
+            }
+
+            setStatus('Erkenne Tabellenstruktur automatisch...', true);
+            document.getElementById('autoDetectBtn').disabled = true;
+
+            try {
+                const response = await fetch('/api/detect-zones', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({})
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    setStatus('Auto-Erkennung fehlgeschlagen: ' + data.error);
+                    document.getElementById('autoDetectBtn').disabled = false;
+                    return;
+                }
+
+                // Apply detected zone
+                if (data.zone) {
+                    // Scale zone coordinates if image sizes differ
+                    const scaleX = canvas.width / data.imageWidth;
+                    const scaleY = canvas.height / data.imageHeight;
+
+                    zones.orders = {
+                        x: data.zone.x * scaleX,
+                        y: data.zone.y * scaleY,
+                        width: data.zone.width * scaleX,
+                        height: data.zone.height * scaleY
+                    };
+
+                    // Apply product codes zone if detected
+                    if (data.zoneCodes) {
+                        zones.codes = {
+                            x: data.zoneCodes.x * scaleX,
+                            y: data.zoneCodes.y * scaleY,
+                            width: data.zoneCodes.width * scaleX,
+                            height: data.zoneCodes.height * scaleY
+                        };
+                        console.log('Product codes zone detected:', zones.codes);
+                    }
+
+                    // Apply product names zone if detected
+                    if (data.zoneNames) {
+                        zones.names = {
+                            x: data.zoneNames.x * scaleX,
+                            y: data.zoneNames.y * scaleY,
+                            width: data.zoneNames.width * scaleX,
+                            height: data.zoneNames.height * scaleY
+                        };
+                        console.log('Product names zone detected:', zones.names);
+                    }
+
+                    // Update row/column inputs
+                    if (data.numRows) {
+                        document.getElementById('numRows').value = data.numRows;
+                    }
+                    if (data.numCols) {
+                        document.getElementById('numCols').value = data.numCols;
+                    }
+
+                    updateZoneInfo();
+                    checkScanReady();
+                    redraw();
+
+                    const debugInfo = data.debug || {};
+                    const codesInfo = data.zoneCodes ? ' + Produktnummern' : '';
+                    const namesInfo = data.zoneNames ? ' + Produktnamen' : '';
+                    setStatus(`Zone erkannt: ${data.numRows} Zeilen, ${data.numCols} Spalten${namesInfo}${codesInfo}. Klicken Sie "Zone scannen".`);
+                    setMode('zone');
+                    setGuideStep('scan');  // Highlight scan button
+                    document.getElementById('instructions').innerHTML =
+                        '<strong>Schritt 3:</strong> Klicken Sie auf "Zone scannen" um die Bestellmengen zu erkennen.';
+                } else {
+                    setStatus('Keine Zone erkannt. Bitte manuell zeichnen.');
+                    setGuideStep('none');
+                }
+
+            } catch (err) {
+                setStatus('Fehler bei Auto-Erkennung: ' + err.message);
+            }
+
+            document.getElementById('autoDetectBtn').disabled = false;
+        }
+
+        function redraw() {
+            if (!image) return;
+            ctx.drawImage(image, 0, 0);
+
+            // Draw all three zones
+            for (const [key, z] of Object.entries(zones)) {
+                if (!z) continue;
+
+                const color = ZONE_COLORS[key];
+
+                // Draw zone rectangle
+                ctx.strokeStyle = color.stroke;
+                ctx.lineWidth = key === activeZone ? 3 : 2;
+                ctx.strokeRect(z.x, z.y, z.width, z.height);
+                ctx.fillStyle = color.fill;
+                ctx.fillRect(z.x, z.y, z.width, z.height);
+
+                // Label
+                ctx.fillStyle = color.stroke;
+                ctx.font = 'bold 12px sans-serif';
+                ctx.fillText(color.name, z.x + 5, z.y - 5);
+            }
+
+            // Draw grid on orders zone
+            const zone = zones.orders;
+            if (zone) {
+                const numRows = parseInt(document.getElementById('numRows').value) || 52;
+                const numCols = parseInt(document.getElementById('numCols').value) || 5;
+                const cellWidth = zone.width / numCols;
+                const cellHeight = zone.height / numRows;
+
+                // Vertical lines (columns)
+                ctx.strokeStyle = 'rgba(0, 212, 255, 0.5)';
+                ctx.lineWidth = 1;
+                for (let i = 0; i <= numCols; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(zone.x + i * cellWidth, zone.y);
+                    ctx.lineTo(zone.x + i * cellWidth, zone.y + zone.height);
+                    ctx.stroke();
+                }
+
+                // Horizontal lines (rows) - draw every 5th line for visibility
+                for (let i = 0; i <= numRows; i++) {
+                    ctx.strokeStyle = (i % 5 === 0) ? 'rgba(0, 212, 255, 0.5)' : 'rgba(0, 212, 255, 0.15)';
+                    ctx.beginPath();
+                    ctx.moveTo(zone.x, zone.y + i * cellHeight);
+                    ctx.lineTo(zone.x + zone.width, zone.y + i * cellHeight);
+                    ctx.stroke();
+                }
+
+                // Draw column headers (Mo, Di, Mi, Do, Fr)
+                const days = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+                ctx.fillStyle = '#00d4ff';
+                ctx.font = 'bold 14px sans-serif';
+                for (let i = 0; i < numCols && i < days.length; i++) {
+                    ctx.fillText(days[i], zone.x + i * cellWidth + cellWidth/2 - 10, zone.y - 20);
+                }
+            }
+
+            // Draw detected cells
+            results.forEach((r, i) => {
+                const isHighlighted = (i === highlightedResultIndex);
+
+                if (isHighlighted) {
+                    // Pulsing glow effect for highlighted blob
+                    const pulseIntensity = 0.5 + 0.5 * Math.sin(highlightPulse);
+                    const glowSize = 3 + 4 * pulseIntensity;
+
+                    // Outer glow
+                    ctx.strokeStyle = `rgba(255, 255, 0, ${0.3 + 0.4 * pulseIntensity})`;
+                    ctx.lineWidth = 12 + glowSize;
+                    ctx.strokeRect(r.x - 4, r.y - 4, r.width + 8, r.height + 8);
+
+                    // Middle ring
+                    ctx.strokeStyle = `rgba(255, 100, 0, ${0.7 + 0.3 * pulseIntensity})`;
+                    ctx.lineWidth = 6;
+                    ctx.strokeRect(r.x - 2, r.y - 2, r.width + 4, r.height + 4);
+
+                    // Inner bright ring
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 1.0)';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(r.x, r.y, r.width, r.height);
+                } else {
+                    const color = r.reviewed ? 'rgba(40, 167, 69, 0.8)' :
+                                  r.confidence < 0.5 ? 'rgba(255, 50, 50, 0.8)' :
+                                  'rgba(255, 200, 0, 0.8)';
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 4;
+                    ctx.strokeRect(r.x, r.y, r.width, r.height);
+                }
+
+                // Label
+                const labelColor = isHighlighted ? 'rgba(255, 255, 0, 1.0)' :
+                                   r.reviewed ? 'rgba(40, 167, 69, 0.8)' :
+                                   r.confidence < 0.5 ? 'rgba(255, 50, 50, 0.8)' :
+                                   'rgba(255, 200, 0, 0.8)';
+                ctx.fillStyle = labelColor;
+                ctx.font = isHighlighted ? 'bold 18px sans-serif' : 'bold 14px sans-serif';
+                ctx.fillText(r.digit || '?', r.x + 2, r.y - 4);
+
+                // Store bounding box for click detection
+                r._index = i;
+            });
+        }
+
+        async function scanZone() {
+            if (!zones.orders) return;
+
+            document.getElementById('scanBtn').disabled = true;
+
+            const numRows = parseInt(document.getElementById('numRows').value) || 59;
+            const numCols = parseInt(document.getElementById('numCols').value) || 6;
+
+            try {
+                // Step 1: Scan blobs (order quantities)
+                setStatus('Schritt 1/3: Erkenne Bestellmengen...', true);
+
+                const response = await fetch('/api/scan-zone', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        zone: zones.orders,
+                        numRows: numRows,
+                        numCols: numCols,
+                        imageWidth: canvas.width,
+                        imageHeight: canvas.height
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    setStatus('Fehler: ' + data.error);
+                    document.getElementById('scanBtn').disabled = false;
+                    return;
+                }
+
+                results = data.results || [];
+                updateResults();
+                redraw();
+                setStatus(`${results.length} Bestellmengen gefunden. Schritt 2/3: Lese Produktnummern...`, true);
+
+                // Step 2: Read product codes (if zone defined)
+                if (zones.codes) {
+                    const codesResponse = await fetch('/api/read-product-codes', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            zoneCodes: zones.codes,
+                            numRows: numRows,
+                            imageWidth: canvas.width,
+                            imageHeight: canvas.height
+                        })
+                    });
+
+                    const codesData = await codesResponse.json();
+                    if (codesData.codes) {
+                        // Update results with product codes
+                        results.forEach(r => {
+                            const rowIndex = r.row - 1;  // Convert to 0-based
+                            if (codesData.codes[rowIndex]) {
+                                r.product_code = codesData.codes[rowIndex];
+                            }
+                        });
+                        updateResults();
+                        setStatus(`Produktnummern geladen. Schritt 3/3: Lese Produktnamen...`, true);
+                    }
+                } else {
+                    setStatus(`Schritt 3/3: Lese Produktnamen...`, true);
+                }
+
+                // Step 3: Read product names (if zone defined)
+                if (zones.names) {
+                    const namesResponse = await fetch('/api/read-product-names', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            zoneNames: zones.names,
+                            numRows: numRows,
+                            imageWidth: canvas.width,
+                            imageHeight: canvas.height
+                        })
+                    });
+
+                    const namesData = await namesResponse.json();
+                    if (namesData.names) {
+                        // Update results with product names
+                        results.forEach(r => {
+                            const rowIndex = r.row - 1;  // Convert to 0-based
+                            if (namesData.names[rowIndex]) {
+                                r.product_name = namesData.names[rowIndex];
+                            }
+                        });
+                        updateResults();
+                    }
+                }
+
+                updateStats();
+                redraw();
+
+                document.getElementById('scanBtn').disabled = false;
+                document.getElementById('reviewBtn').disabled = results.length === 0;
+
+                const pending = results.filter(r => !r.reviewed && r.confidence < 0.7).length;
+                setStatus(`Scan abgeschlossen: ${results.length} Einträge, ${pending} zur Überprüfung.`);
+                setMode('review');
+                setGuideStep('none');  // Stop blinking after scan
+                document.getElementById('instructions').innerHTML =
+                    '<strong>Schritt 4:</strong> Überprüfen Sie die Ergebnisse. Klicken Sie auf eine Zeile oder "Nächstes prüfen" um unsichere Erkennungen zu korrigieren.';
+
+            } catch (err) {
+                setStatus('Fehler: ' + err.message);
+                document.getElementById('scanBtn').disabled = false;
+            }
+        }
+
+        function updateResults() {
+            const tbody = document.getElementById('resultsBody');
+            document.getElementById('orderCount').textContent = results.length;
+
+            if (results.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;">Keine Einträge gefunden</td></tr>';
+                return;
+            }
+
+            // Sort by row number, then by day (Mo, Di, Mi, Do, Fr)
+            const dayOrder = {'Mo': 0, 'Di': 1, 'Mi': 2, 'Do': 3, 'Fr': 4, 'Sa': 5, 'So': 6};
+            const sortedResults = results
+                .map((r, i) => ({...r, originalIndex: i}))
+                .sort((a, b) => {
+                    if (a.row !== b.row) return a.row - b.row;
+                    const dayA = dayOrder[a.column] ?? 99;
+                    const dayB = dayOrder[b.column] ?? 99;
+                    return dayA - dayB;
+                });
+
+            tbody.innerHTML = sortedResults.map((r) => {
+                const i = r.originalIndex;
+                const rowClass = r.reviewed ? 'reviewed' : (r.confidence < 0.5 ? 'uncertain' : '');
+                const icon = r.reviewed ? '✓' : (r.confidence < 0.5 ? '⚠' : '');
+                // Use OCR-detected product info, fallback to row number
+                const productCode = r.product_code || r.row;
+                const productName = r.product_name || `Zeile ${r.row}`;
+                return `
+                    <tr class="${rowClass}" data-index="${i}" onclick="selectResultRow(${i})" ondblclick="openReview(${i})" style="cursor:pointer;">
+                        <td>
+                            <input type="text" class="quantity-input" value="${r.digit || '?'}"
+                                   onclick="event.stopPropagation()"
+                                   onchange="updateDigit(${i}, this.value)">
+                        </td>
+                        <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${productName}">${productName}</td>
+                        <td>${productCode}</td>
+                        <td>${r.column}</td>
+                        <td>${icon}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateStats() {
+            const total = results.length;
+            const reviewed = results.filter(r => r.reviewed).length;
+            const pending = total - reviewed;
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statReviewed').textContent = reviewed;
+            document.getElementById('statPending').textContent = pending;
+        }
+
+        function openReview(index) {
+            currentReviewIndex = index;
+            const r = results[index];
+
+            document.getElementById('reviewContext').textContent =
+                `Zeile ${r.row}, ${r.column}`;
+
+            // Create cell image from canvas
+            const cellCanvas = document.createElement('canvas');
+            cellCanvas.width = r.width;
+            cellCanvas.height = r.height;
+            const cellCtx = cellCanvas.getContext('2d');
+            cellCtx.drawImage(image, r.x, r.y, r.width, r.height, 0, 0, r.width, r.height);
+            document.getElementById('reviewImage').src = cellCanvas.toDataURL();
+
+            document.getElementById('reviewModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('reviewModal').classList.remove('active');
+            currentReviewIndex = -1;
+        }
+
+        function setDigit(digit) {
+            if (currentReviewIndex < 0) return;
+
+            if (digit === 'empty') {
+                // Remove this result
+                results.splice(currentReviewIndex, 1);
+            } else {
+                results[currentReviewIndex].digit = digit;
+                results[currentReviewIndex].confidence = 1.0;
+                results[currentReviewIndex].reviewed = true;
+
+                // Save as training sample
+                saveTrainingSample(currentReviewIndex, digit);
+            }
+
+            closeModal();
+            updateResults();
+            updateStats();
+            redraw();
+        }
+
+        function updateDigit(index, value) {
+            if (value && /^[0-9]$/.test(value)) {
+                const oldDigit = results[index].digit;
+                results[index].digit = value;
+                results[index].reviewed = true;
+                results[index].confidence = 1.0;
+
+                // Save as training sample if digit changed
+                if (oldDigit !== value) {
+                    saveTrainingSample(index, value);
+                    setStatus(`Ziffer "${value}" gespeichert als Trainingsbeispiel`);
+                }
+
+                updateStats();
+                updateResults();
+                redraw();
+            }
+        }
+
+        function reviewNext() {
+            const index = results.findIndex(r => !r.reviewed && r.confidence < 0.7);
+            if (index >= 0) {
+                openReview(index);
+            } else {
+                setStatus('Alle Einträge wurden überprüft!');
+            }
+        }
+
+        async function saveTrainingSample(index, digit) {
+            const r = results[index];
+            // Create cell image data
+            const cellCanvas = document.createElement('canvas');
+            cellCanvas.width = r.width;
+            cellCanvas.height = r.height;
+            const cellCtx = cellCanvas.getContext('2d');
+            cellCtx.drawImage(image, r.x, r.y, r.width, r.height, 0, 0, r.width, r.height);
+
+            try {
+                await fetch('/api/save-training-sample', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        digit: digit,
+                        imageData: cellCanvas.toDataURL(),
+                        row: r.row,
+                        column: r.column
+                    })
+                });
+            } catch (e) {
+                console.error('Failed to save training sample:', e);
+            }
+        }
+
+        function exportResults() {
+            const exportData = results.map(r => ({
+                quantity: r.digit,
+                productCode: r.product_code || r.row,
+                productName: r.product_name || `Zeile ${r.row}`,
+                column: r.column,
+                confidence: r.confidence,
+                reviewed: r.reviewed || false
+            }));
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'bestellungen_' + new Date().toISOString().slice(0,10) + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function setStatus(msg, isActive = false) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = msg;
+            if (isActive) {
+                statusEl.classList.add('active');
+            } else {
+                statusEl.classList.remove('active');
+            }
+        }
+
+        function showProgress(show) {
+            const container = document.getElementById('progressContainer');
+            if (show) {
+                container.classList.add('active');
+            } else {
+                container.classList.remove('active');
+            }
+        }
+
+        function updateProgress(percent, stepText, detailText, currentStep, totalSteps) {
+            const bar = document.getElementById('progressBar');
+            const percentEl = document.getElementById('progressPercent');
+            const stepEl = document.getElementById('progressStep');
+            const detailEl = document.getElementById('progressDetail');
+
+            bar.style.width = percent + '%';
+            percentEl.textContent = percent + '%';
+            stepEl.textContent = `Schritt ${currentStep}/${totalSteps}`;
+            detailEl.textContent = detailText;
+
+            // Also update status text
+            setStatus(stepText, true);
+        }
+
+        function setMode(mode) {
+            const indicator = document.getElementById('modeIndicator');
+            if (mode === 'zone') {
+                indicator.textContent = 'Modus: Zone definieren';
+                indicator.className = 'mode-indicator mode-zone';
+            } else {
+                indicator.textContent = 'Modus: Ergebnisse prüfen';
+                indicator.className = 'mode-indicator mode-review';
+            }
+        }
+
+        // User guidance: highlight next action button
+        function setGuideStep(step) {
+            // Remove blink from all guide buttons
+            const guideButtons = ['loadFileBtn', 'autoDetectBtn', 'scanBtn'];
+            guideButtons.forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.classList.remove('guide-blink');
+            });
+
+            // Add blink to the appropriate button
+            switch(step) {
+                case 'load':
+                    document.getElementById('loadFileBtn')?.classList.add('guide-blink');
+                    break;
+                case 'detect':
+                    document.getElementById('autoDetectBtn')?.classList.add('guide-blink');
+                    break;
+                case 'scan':
+                    document.getElementById('scanBtn')?.classList.add('guide-blink');
+                    break;
+                case 'none':
+                default:
+                    // No button blinking
+                    break;
+            }
+        }
+
+        // Update grid preview when row/col count changes
+        document.getElementById('numRows').addEventListener('change', redraw);
+        document.getElementById('numCols').addEventListener('change', redraw);
+
+        // Load training stats
+        async function loadTrainingStats() {
+            try {
+                const response = await fetch('/api/training-stats');
+                const data = await response.json();
+                const stats = data.stats || {};
+
+                const digits = Object.keys(stats).sort();
+                if (digits.length === 0) {
+                    document.getElementById('trainingStats').innerHTML =
+                        '<span style="color: #f66;">Keine Trainingsbeispiele</span><br>' +
+                        '<small>Korrigieren Sie Erkennungen um Beispiele zu sammeln.</small>';
+                } else {
+                    const total = Object.values(stats).reduce((a, b) => a + b, 0);
+                    let html = `<strong>${total} Beispiele</strong><br>`;
+                    html += digits.map(d => `<span style="color:#0f0;">${d}</span>: ${stats[d]}`).join(' | ');
+                    document.getElementById('trainingStats').innerHTML = html;
+                }
+            } catch (err) {
+                document.getElementById('trainingStats').innerHTML = 'Fehler beim Laden';
+            }
+        }
+
+        // Load training stats on page load
+        loadTrainingStats();
+
+        // Check GPU status
+        async function checkGpuStatus() {
+            try {
+                const response = await fetch('/api/gpu-status');
+                const data = await response.json();
+
+                const indicator = document.getElementById('gpuIndicator');
+                const label = document.getElementById('gpuLabel');
+
+                if (data.gpu_available) {
+                    indicator.style.background = '#00ff00';
+                    indicator.style.boxShadow = '0 0 8px #00ff00';
+                    label.textContent = 'GPU aktiv';
+                    label.style.color = '#00ff00';
+                } else {
+                    indicator.style.background = '#ff6600';
+                    label.textContent = 'CPU Modus';
+                    label.style.color = '#ff6600';
+                }
+            } catch (err) {
+                const indicator = document.getElementById('gpuIndicator');
+                const label = document.getElementById('gpuLabel');
+                indicator.style.background = '#ff0000';
+                label.textContent = 'GPU: Fehler';
+                label.style.color = '#ff0000';
+            }
+        }
+
+        // Check GPU status on page load
+        checkGpuStatus();
+    </script>
+</body>
+</html>

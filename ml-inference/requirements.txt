@@ -1,0 +1,3 @@
+# Note: Most dependencies come from the base image
+# Additional packages if needed
+numpy

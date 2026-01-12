@@ -1,0 +1,3077 @@
+{
+  "form_type": "Bestellblatt-1",
+  "version": "1.0",
+  "extracted_from": "/app/templates/Bestellblatt-1.png",
+  "extraction_date": "2026-01-10T08:48:05.150241",
+  "image_dimensions": {
+    "width": 1241,
+    "height": 1754
+  },
+  "grid": {
+    "horizontal_lines": [
+      97,
+      122,
+      147,
+      181,
+      206,
+      231,
+      256,
+      281,
+      306,
+      331,
+      356,
+      381,
+      406,
+      431,
+      456,
+      481,
+      506,
+      531,
+      556,
+      581,
+      606,
+      631,
+      656,
+      689,
+      714,
+      739,
+      764,
+      789,
+      814,
+      839,
+      873,
+      898,
+      923,
+      948,
+      973,
+      998,
+      1023,
+      1048,
+      1073,
+      1098,
+      1123,
+      1148,
+      1173,
+      1198,
+      1223,
+      1248,
+      1273,
+      1298,
+      1331,
+      1356,
+      1381,
+      1407,
+      1432,
+      1457,
+      1490,
+      1515,
+      1540,
+      1565,
+      1590,
+      1615,
+      1640
+    ],
+    "vertical_lines": [
+      36,
+      100,
+      468,
+      577,
+      686,
+      795,
+      904,
+      1013,
+      1086,
+      1135,
+      1199
+    ],
+    "row_count": 60,
+    "column_count": 10
+  },
+  "columns": {
+    "product_number": {
+      "index": 0,
+      "x_start": 36,
+      "x_end": 100,
+      "width": 64,
+      "type": "static"
+    },
+    "product_name": {
+      "index": 1,
+      "x_start": 100,
+      "x_end": 468,
+      "width": 368,
+      "type": "static"
+    },
+    "input_columns": [
+      {
+        "index": 2,
+        "name": "Mo",
+        "x_start": 468,
+        "x_end": 577,
+        "width": 109,
+        "type": "input"
+      },
+      {
+        "index": 3,
+        "name": "Di",
+        "x_start": 577,
+        "x_end": 686,
+        "width": 109,
+        "type": "input"
+      },
+      {
+        "index": 4,
+        "name": "Mi",
+        "x_start": 686,
+        "x_end": 795,
+        "width": 109,
+        "type": "input"
+      },
+      {
+        "index": 5,
+        "name": "Do",
+        "x_start": 795,
+        "x_end": 904,
+        "width": 109,
+        "type": "input"
+      },
+      {
+        "index": 6,
+        "name": "Fr",
+        "x_start": 904,
+        "x_end": 1013,
+        "width": 109,
+        "type": "input"
+      },
+      {
+        "index": 7,
+        "name": "Sa",
+        "x_start": 1013,
+        "x_end": 1086,
+        "width": 73,
+        "type": "input"
+      }
+    ]
+  },
+  "products": [
+    {
+      "row": 7,
+      "product_number": "31",
+      "product_name": "Märitsalat",
+      "product_number_cell": {
+        "x": 36,
+        "y": 281,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 281,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 281,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 281,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 281,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 281,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 281,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 281,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 8,
+      "product_number": "32",
+      "product_name": "Gemischter Mais Thon Salat",
+      "product_number_cell": {
+        "x": 36,
+        "y": 306,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 306,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 306,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 306,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 306,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 306,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 306,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 306,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 9,
+      "product_number": "33",
+      "product_name": "Cleopatra-Salat",
+      "product_number_cell": {
+        "x": 36,
+        "y": 331,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 331,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 331,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 331,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 331,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 331,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 331,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 331,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 10,
+      "product_number": "34",
+      "product_name": "Salade Taboule",
+      "product_number_cell": {
+        "x": 36,
+        "y": 356,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 356,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 356,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 356,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 356,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 356,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 356,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 356,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 11,
+      "product_number": "35",
+      "product_name": "Nüsslisalat mit Speck und Ei",
+      "product_number_cell": {
+        "x": 36,
+        "y": 381,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 381,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 381,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 381,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 381,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 381,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 381,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 381,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 12,
+      "product_number": "36",
+      "product_name": "Nüsslisalat mit",
+      "product_number_cell": {
+        "x": 36,
+        "y": 406,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 406,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 406,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 406,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 406,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 406,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 406,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 406,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 13,
+      "product_number": "37",
+      "product_name": "Salade Caprese",
+      "product_number_cell": {
+        "x": 36,
+        "y": 431,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 431,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 431,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 431,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 431,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 431,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 431,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 431,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 14,
+      "product_number": "38",
+      "product_name": "Power-Salat (Haltbarkeit 3 Tage",
+      "product_number_cell": {
+        "x": 36,
+        "y": 456,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 456,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 456,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 456,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 456,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 456,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 456,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 456,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 15,
+      "product_number": "39",
+      "product_name": "Bärner Quinoa-Linsensalat",
+      "product_number_cell": {
+        "x": 36,
+        "y": 481,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 481,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 481,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 481,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 481,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 481,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 481,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 481,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 16,
+      "product_number": "40",
+      "product_name": "Griechischer Salat",
+      "product_number_cell": {
+        "x": 36,
+        "y": 506,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 506,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 506,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 506,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 506,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 506,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 506,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 506,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 17,
+      "product_number": "",
+      "product_name": "Grüner Salat mit Rüebli & Kernen",
+      "product_number_cell": {
+        "x": 36,
+        "y": 531,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 531,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 531,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 531,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 531,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 531,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 531,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 531,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 18,
+      "product_number": "42",
+      "product_name": "Grüner Salat mit Hüttenkäse",
+      "product_number_cell": {
+        "x": 36,
+        "y": 556,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 556,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 556,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 556,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 556,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 556,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 556,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 556,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 19,
+      "product_number": "43",
+      "product_name": "Grüner Salat gemischt",
+      "product_number_cell": {
+        "x": 36,
+        "y": 581,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 581,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 581,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 581,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 581,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 581,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 581,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 581,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 20,
+      "product_number": "",
+      "product_name": "Grüner Salat mit roten Bohnen",
+      "product_number_cell": {
+        "x": 36,
+        "y": 606,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 606,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 606,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 606,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 606,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 606,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 606,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 606,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 21,
+      "product_number": "45",
+      "product_name": "Grüner Salat mit Poulet & Peperoni",
+      "product_number_cell": {
+        "x": 36,
+        "y": 631,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 631,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 631,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 631,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 631,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 631,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 631,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 631,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 22,
+      "product_number": "",
+      "product_name": "Haltbarkeit \"Chly\" Tage",
+      "product_number_cell": {
+        "x": 36,
+        "y": 656,
+        "width": 64,
+        "height": 33
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 656,
+        "width": 368,
+        "height": 33
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 656,
+          "width": 109,
+          "height": 33
+        },
+        "Di": {
+          "x": 577,
+          "y": 656,
+          "width": 109,
+          "height": 33
+        },
+        "Mi": {
+          "x": 686,
+          "y": 656,
+          "width": 109,
+          "height": 33
+        },
+        "Do": {
+          "x": 795,
+          "y": 656,
+          "width": 109,
+          "height": 33
+        },
+        "Fr": {
+          "x": 904,
+          "y": 656,
+          "width": 109,
+          "height": 33
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 656,
+          "width": 73,
+          "height": 33
+        }
+      }
+    },
+    {
+      "row": 23,
+      "product_number": "",
+      "product_name": "Grüner Salat mit Rüebli & Kernen",
+      "product_number_cell": {
+        "x": 36,
+        "y": 689,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 689,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 689,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 689,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 689,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 689,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 689,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 689,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 24,
+      "product_number": "",
+      "product_name": "Grüner Salat mit Gurken und Ei",
+      "product_number_cell": {
+        "x": 36,
+        "y": 714,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 714,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 714,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 714,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 714,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 714,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 714,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 714,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 25,
+      "product_number": "92",
+      "product_name": "Grüner Salat mit Tomaten, Ei und Käse",
+      "product_number_cell": {
+        "x": 36,
+        "y": 739,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 739,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 739,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 739,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 739,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 739,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 739,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 739,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 26,
+      "product_number": "93",
+      "product_name": "Grüner Salat gemischt",
+      "product_number_cell": {
+        "x": 36,
+        "y": 764,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 764,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 764,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 764,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 764,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 764,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 764,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 764,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 27,
+      "product_number": "94",
+      "product_name": "Randensalat mit Hüttenkäse",
+      "product_number_cell": {
+        "x": 36,
+        "y": 789,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 789,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 789,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 789,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 789,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 789,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 789,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 789,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 28,
+      "product_number": "95",
+      "product_name": "Bohnen-Feta Salat",
+      "product_number_cell": {
+        "x": 36,
+        "y": 814,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 814,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 814,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 814,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 814,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 814,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 814,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 814,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 29,
+      "product_number": "",
+      "product_name": "Sandwiches Haltbarkeit 2 Tage",
+      "product_number_cell": {
+        "x": 36,
+        "y": 839,
+        "width": 64,
+        "height": 34
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 839,
+        "width": 368,
+        "height": 34
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 839,
+          "width": 109,
+          "height": 34
+        },
+        "Di": {
+          "x": 577,
+          "y": 839,
+          "width": 109,
+          "height": 34
+        },
+        "Mi": {
+          "x": 686,
+          "y": 839,
+          "width": 109,
+          "height": 34
+        },
+        "Do": {
+          "x": 795,
+          "y": 839,
+          "width": 109,
+          "height": 34
+        },
+        "Fr": {
+          "x": 904,
+          "y": 839,
+          "width": 109,
+          "height": 34
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 839,
+          "width": 73,
+          "height": 34
+        }
+      }
+    },
+    {
+      "row": 30,
+      "product_number": "600",
+      "product_name": "Sandwich Crustino mit Schinken",
+      "product_number_cell": {
+        "x": 36,
+        "y": 873,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 873,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 873,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 873,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 873,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 873,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 873,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 873,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 31,
+      "product_number": "601",
+      "product_name": "Weggli mit Schinken",
+      "product_number_cell": {
+        "x": 36,
+        "y": 898,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 898,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 898,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 898,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 898,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 898,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 898,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 898,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 32,
+      "product_number": "602",
+      "product_name": "Sandwich Crustino mit Käse",
+      "product_number_cell": {
+        "x": 36,
+        "y": 923,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 923,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 923,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 923,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 923,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 923,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 923,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 923,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 33,
+      "product_number": "603",
+      "product_name": "Weggli mit Käse",
+      "product_number_cell": {
+        "x": 36,
+        "y": 948,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 948,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 948,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 948,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 948,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 948,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 948,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 948,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 34,
+      "product_number": "604",
+      "product_name": "Zopf mit Schinken-Käse",
+      "product_number_cell": {
+        "x": 36,
+        "y": 973,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 973,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 973,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 973,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 973,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 973,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 973,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 973,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 35,
+      "product_number": "605",
+      "product_name": "Ruchbrot mit Schinken-Käse",
+      "product_number_cell": {
+        "x": 36,
+        "y": 998,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 998,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 998,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 998,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 998,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 998,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 998,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 998,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 36,
+      "product_number": "606",
+      "product_name": "Ruchbrot mit Salami",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1023,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1023,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1023,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 1023,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1023,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 1023,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1023,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1023,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 37,
+      "product_number": "607",
+      "product_name": "Laugensandwich mit Salami",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1048,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1048,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1048,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 1048,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1048,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 1048,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1048,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1048,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 38,
+      "product_number": "608",
+      "product_name": "Laugensandwich mit Kräuterfrischkäse",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1073,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1073,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1073,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 1073,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1073,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 1073,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1073,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1073,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 39,
+      "product_number": "609",
+      "product_name": "Laugensilserli mit Kräuterfrischkäse",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1098,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1098,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1098,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 1098,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1098,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 1098,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1098,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1098,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 40,
+      "product_number": "610",
+      "product_name": "Laugensilserli mit Thon",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1123,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1123,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1123,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 1123,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1123,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 1123,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1123,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1123,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 41,
+      "product_number": "",
+      "product_name": "Ciabatta mit Thon",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1148,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1148,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1148,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 1148,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1148,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 1148,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1148,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1148,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 42,
+      "product_number": "612",
+      "product_name": "Ciabatta mit Roastbeef",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1173,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1173,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1173,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 1173,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1173,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 1173,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1173,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1173,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 43,
+      "product_number": "613",
+      "product_name": "Schraubenbrot mit Schnitzel",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1198,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1198,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1198,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 1198,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1198,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 1198,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1198,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1198,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 44,
+      "product_number": "614",
+      "product_name": "Maggia-Parisettli Caprese",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1223,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1223,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1223,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 1223,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1223,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 1223,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1223,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1223,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 45,
+      "product_number": "615",
+      "product_name": "Maggia-Parisettli mit Brie",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1248,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1248,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1248,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 1248,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1248,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 1248,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1248,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1248,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 46,
+      "product_number": "616",
+      "product_name": "Maggia-Parisettli mit Trockenfleisch",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1273,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1273,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1273,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 1273,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1273,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 1273,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1273,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1273,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 47,
+      "product_number": "",
+      "product_name": "Weitere Produkte Haltbarkeit 3 Tage",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1298,
+        "width": 64,
+        "height": 33
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1298,
+        "width": 368,
+        "height": 33
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1298,
+          "width": 109,
+          "height": 33
+        },
+        "Di": {
+          "x": 577,
+          "y": 1298,
+          "width": 109,
+          "height": 33
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1298,
+          "width": 109,
+          "height": 33
+        },
+        "Do": {
+          "x": 795,
+          "y": 1298,
+          "width": 109,
+          "height": 33
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1298,
+          "width": 109,
+          "height": 33
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1298,
+          "width": 73,
+          "height": 33
+        }
+      }
+    },
+    {
+      "row": 48,
+      "product_number": "130",
+      "product_name": "Birchermüesli mit Waldbeeren klein",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1331,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1331,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1331,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 1331,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1331,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 1331,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1331,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1331,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 49,
+      "product_number": "132",
+      "product_name": "Birchermüesli mit Waldbeeren gross",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1356,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1356,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1356,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 1356,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1356,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 1356,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1356,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1356,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 50,
+      "product_number": "150",
+      "product_name": "Wrap mit Bärner Quinoa & Roastbeef",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1381,
+        "width": 64,
+        "height": 26
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1381,
+        "width": 368,
+        "height": 26
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1381,
+          "width": 109,
+          "height": 26
+        },
+        "Di": {
+          "x": 577,
+          "y": 1381,
+          "width": 109,
+          "height": 26
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1381,
+          "width": 109,
+          "height": 26
+        },
+        "Do": {
+          "x": 795,
+          "y": 1381,
+          "width": 109,
+          "height": 26
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1381,
+          "width": 109,
+          "height": 26
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1381,
+          "width": 73,
+          "height": 26
+        }
+      }
+    },
+    {
+      "row": 51,
+      "product_number": "151",
+      "product_name": "Wrap mit Schinken & Käse",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1407,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1407,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1407,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 1407,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1407,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 1407,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1407,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1407,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 52,
+      "product_number": "152",
+      "product_name": "Wrap Taboule",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1432,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1432,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1432,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 1432,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1432,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 1432,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1432,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1432,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 53,
+      "product_number": "",
+      "product_name": "Suppen Haltbarkeit 4 Tage",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1457,
+        "width": 64,
+        "height": 33
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1457,
+        "width": 368,
+        "height": 33
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1457,
+          "width": 109,
+          "height": 33
+        },
+        "Di": {
+          "x": 577,
+          "y": 1457,
+          "width": 109,
+          "height": 33
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1457,
+          "width": 109,
+          "height": 33
+        },
+        "Do": {
+          "x": 795,
+          "y": 1457,
+          "width": 109,
+          "height": 33
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1457,
+          "width": 109,
+          "height": 33
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1457,
+          "width": 73,
+          "height": 33
+        }
+      }
+    },
+    {
+      "row": 54,
+      "product_number": "200",
+      "product_name": "Rassige Tomatensuppe",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1490,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1490,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1490,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 1490,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1490,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 1490,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1490,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1490,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 55,
+      "product_number": "201",
+      "product_name": "Rüebli-Zucchettisuppe",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1515,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1515,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1515,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 1515,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1515,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 1515,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1515,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1515,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 56,
+      "product_number": "202",
+      "product_name": "Lauch-Specksuppe",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1540,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1540,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1540,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 1540,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1540,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 1540,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1540,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1540,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 57,
+      "product_number": "210-212",
+      "product_name": "Saisonsuppe (Kürbis Broccoli Spargel)",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1565,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1565,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1565,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 1565,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1565,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 1565,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1565,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1565,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 58,
+      "product_number": "",
+      "product_name": "",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1590,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1590,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1590,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 1590,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1590,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 1590,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1590,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1590,
+          "width": 73,
+          "height": 25
+        }
+      }
+    },
+    {
+      "row": 59,
+      "product_number": "die #Fur",
+      "product_name": "Lieferungen Montag & Donnerstag bitte zusätzlic",
+      "product_number_cell": {
+        "x": 36,
+        "y": 1615,
+        "width": 64,
+        "height": 25
+      },
+      "product_name_cell": {
+        "x": 100,
+        "y": 1615,
+        "width": 368,
+        "height": 25
+      },
+      "cells": {
+        "Mo": {
+          "x": 468,
+          "y": 1615,
+          "width": 109,
+          "height": 25
+        },
+        "Di": {
+          "x": 577,
+          "y": 1615,
+          "width": 109,
+          "height": 25
+        },
+        "Mi": {
+          "x": 686,
+          "y": 1615,
+          "width": 109,
+          "height": 25
+        },
+        "Do": {
+          "x": 795,
+          "y": 1615,
+          "width": 109,
+          "height": 25
+        },
+        "Fr": {
+          "x": 904,
+          "y": 1615,
+          "width": 109,
+          "height": 25
+        },
+        "Sa": {
+          "x": 1013,
+          "y": 1615,
+          "width": 73,
+          "height": 25
+        }
+      }
+    }
+  ],
+  "empty_cell_threshold": {
+    "variance": 50,
+    "white_ratio": 0.95
+  }
+}

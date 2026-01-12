@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+.env
+
+# Daten-Verzeichnisse (nur Laufzeitdaten)
+shared/input/
+shared/output/
+shared/intermediate/
+
+# ML-Modelle (zu gross fuer Git)
+shared/models/
+*.h5
+*.gz
+*.pt
+*.pth
+*.onnx
+
+# Debug-Dateien
+shared/templates/debug_cells/
+
+# Screenshots und Test-Dateien
+shared/templates/Bildschirmfoto*
+shared/templates/*Kopie*
+shared/templates/*.eml
+shared/templates/Erkannte_Bestellungen.png
+shared/templates/Feste_Spalte.png
+shared/templates/NO_EDIT.png
+shared/templates/Nicht_Erkannt.png
+shared/templates/Spalte_Dienstag.png
+shared/templates/Tagesgrenzen.png
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS / macOS
+.DS_Store
+._*
+Thumbs.db
+.smbdelete*
+*.sb-*-*
+
+# Logs
+*.log
+logs/

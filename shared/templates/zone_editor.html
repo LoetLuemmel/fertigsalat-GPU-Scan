@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan Zone Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        h1 { color: #4CAF50; }
+        #container {
+            position: relative;
+            display: inline-block;
+            border: 2px solid #4CAF50;
+        }
+        #formImage {
+            display: block;
+            max-width: 100%;
+        }
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: crosshair;
+        }
+        #controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: #333;
+            border-radius: 8px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+        }
+        .btn-primary { background: #4CAF50; color: white; }
+        .btn-danger { background: #f44336; color: white; }
+        .btn-info { background: #2196F3; color: white; }
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            background: #222;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        #coords {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .zone-list {
+            margin-top: 10px;
+        }
+        .zone-item {
+            background: #444;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .zone-item button {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Scan Zone Editor</h1>
+    <p>Zeichnen Sie Rechtecke um die zu scannenden Bereiche. Klicken und ziehen Sie mit der Maus.</p>
+
+    <div id="controls">
+        <button class="btn-danger" onclick="clearZones()">Alle Zonen löschen</button>
+        <button class="btn-info" onclick="undoLast()">Letzte rückgängig</button>
+        <button class="btn-primary" onclick="exportZones()">Koordinaten exportieren</button>
+        <button class="btn-info" onclick="saveImage()">Bild mit Zonen speichern</button>
+    </div>
+
+    <div id="coords">Maus: (-, -)</div>
+
+    <div id="container">
+        <img id="formImage" src="scan_zones_small.png" alt="Form">
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <div id="controls">
+        <h3>Definierte Zonen:</h3>
+        <div id="zoneList" class="zone-list"></div>
+    </div>
+
+    <div id="output">
+        <h3>Export (Template-Koordinaten):</h3>
+        <pre id="exportData">Noch keine Zonen definiert.</pre>
+    </div>
+
+    <script>
+        const img = document.getElementById('formImage');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const coordsDisplay = document.getElementById('coords');
+        const zoneListDiv = document.getElementById('zoneList');
+        const exportDataPre = document.getElementById('exportData');
+
+        let zones = [];
+        let isDrawing = false;
+        let startX, startY;
+        let currentRect = null;
+
+        // Template dimensions (for coordinate conversion)
+        const TEMPLATE_WIDTH = 1241;
+        const TEMPLATE_HEIGHT = 1754;
+
+        img.onload = function() {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            redraw();
+        };
+
+        // If image already loaded
+        if (img.complete) {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            redraw();
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            startX = e.clientX - rect.left;
+            startY = e.clientY - rect.top;
+            isDrawing = true;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            // Convert to template coordinates
+            const scaleX = TEMPLATE_WIDTH / img.width;
+            const scaleY = TEMPLATE_HEIGHT / img.height;
+            const templateX = Math.round(x * scaleX);
+            const templateY = Math.round(y * scaleY);
+
+            coordsDisplay.textContent = `Maus: (${Math.round(x)}, ${Math.round(y)}) | Template: (${templateX}, ${templateY})`;
+
+            if (isDrawing) {
+                currentRect = {
+                    x: Math.min(startX, x),
+                    y: Math.min(startY, y),
+                    width: Math.abs(x - startX),
+                    height: Math.abs(y - startY)
+                };
+                redraw();
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (isDrawing && currentRect && currentRect.width > 5 && currentRect.height > 5) {
+                zones.push({...currentRect});
+                updateZoneList();
+                exportZones();
+            }
+            isDrawing = false;
+            currentRect = null;
+            redraw();
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            if (isDrawing) {
+                isDrawing = false;
+                currentRect = null;
+                redraw();
+            }
+        });
+
+        function redraw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw saved zones
+            zones.forEach((zone, index) => {
+                ctx.strokeStyle = '#00FF00';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(zone.x, zone.y, zone.width, zone.height);
+
+                // Label
+                ctx.fillStyle = '#00FF00';
+                ctx.font = '14px Arial';
+                ctx.fillText(`Zone ${index + 1}`, zone.x + 5, zone.y + 18);
+            });
+
+            // Draw current rectangle being drawn
+            if (currentRect) {
+                ctx.strokeStyle = '#FF0000';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.strokeRect(currentRect.x, currentRect.y, currentRect.width, currentRect.height);
+                ctx.setLineDash([]);
+            }
+        }
+
+        function updateZoneList() {
+            const scaleX = TEMPLATE_WIDTH / img.width;
+            const scaleY = TEMPLATE_HEIGHT / img.height;
+
+            zoneListDiv.innerHTML = zones.map((zone, index) => {
+                const tx = Math.round(zone.x * scaleX);
+                const ty = Math.round(zone.y * scaleY);
+                const tw = Math.round(zone.width * scaleX);
+                const th = Math.round(zone.height * scaleY);
+                return `
+                    <div class="zone-item">
+                        <span>Zone ${index + 1}: x=${tx}, y=${ty}, w=${tw}, h=${th}</span>
+                        <button class="btn-danger" onclick="deleteZone(${index})">Löschen</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function deleteZone(index) {
+            zones.splice(index, 1);
+            updateZoneList();
+            exportZones();
+            redraw();
+        }
+
+        function clearZones() {
+            zones = [];
+            updateZoneList();
+            exportZones();
+            redraw();
+        }
+
+        function undoLast() {
+            if (zones.length > 0) {
+                zones.pop();
+                updateZoneList();
+                exportZones();
+                redraw();
+            }
+        }
+
+        function exportZones() {
+            if (zones.length === 0) {
+                exportDataPre.textContent = 'Noch keine Zonen definiert.';
+                return;
+            }
+
+            const scaleX = TEMPLATE_WIDTH / img.width;
+            const scaleY = TEMPLATE_HEIGHT / img.height;
+
+            const templateZones = zones.map((zone, index) => ({
+                id: index + 1,
+                x_min: Math.round(zone.x * scaleX),
+                y_min: Math.round(zone.y * scaleY),
+                x_max: Math.round((zone.x + zone.width) * scaleX),
+                y_max: Math.round((zone.y + zone.height) * scaleY),
+                width: Math.round(zone.width * scaleX),
+                height: Math.round(zone.height * scaleY)
+            }));
+
+            const output = {
+                template_dimensions: { width: TEMPLATE_WIDTH, height: TEMPLATE_HEIGHT },
+                image_dimensions: { width: img.width, height: img.height },
+                scan_zones: templateZones
+            };
+
+            exportDataPre.textContent = JSON.stringify(output, null, 2);
+        }
+
+        function saveImage() {
+            // Create a new canvas with the image and zones
+            const saveCanvas = document.createElement('canvas');
+            saveCanvas.width = img.naturalWidth || img.width;
+            saveCanvas.height = img.naturalHeight || img.height;
+            const saveCtx = saveCanvas.getContext('2d');
+
+            // Draw image
+            saveCtx.drawImage(img, 0, 0);
+
+            // Scale factor for zones
+            const imgScaleX = saveCanvas.width / img.width;
+            const imgScaleY = saveCanvas.height / img.height;
+
+            // Draw zones
+            zones.forEach((zone, index) => {
+                saveCtx.strokeStyle = '#00FF00';
+                saveCtx.lineWidth = 4;
+                saveCtx.strokeRect(
+                    zone.x * imgScaleX,
+                    zone.y * imgScaleY,
+                    zone.width * imgScaleX,
+                    zone.height * imgScaleY
+                );
+            });
+
+            // Download
+            const link = document.createElement('a');
+            link.download = 'scan_zones_edited.png';
+            link.href = saveCanvas.toDataURL('image/png');
+            link.click();
+        }
+    </script>
+</body>
+</html>
