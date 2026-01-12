@@ -1212,13 +1212,13 @@ zone_gray = cv2.cvtColor(zone_img, cv2.COLOR_BGR2GRAY)
 # Binarize to find dark content
 _, zone_binary = cv2.threshold(zone_gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
-# Remove horizontal lines (table structure)
-h_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (40, 1))
+# Remove horizontal lines (table structure) - use larger kernel to preserve digit strokes
+h_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (80, 1))
 h_lines = cv2.morphologyEx(zone_binary, cv2.MORPH_OPEN, h_kernel)
 zone_binary = cv2.subtract(zone_binary, h_lines)
 
-# Remove vertical lines (table structure)
-v_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 20))
+# Remove vertical lines (table structure) - use larger kernel to preserve digit strokes
+v_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 40))
 v_lines = cv2.morphologyEx(zone_binary, cv2.MORPH_OPEN, v_kernel)
 zone_binary = cv2.subtract(zone_binary, v_lines)
 
