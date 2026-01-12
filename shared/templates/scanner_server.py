@@ -332,7 +332,7 @@ contours, _ = cv2.findContours(zone_binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_
 blob_id = 0
 for cnt in contours:
     area = cv2.contourArea(cnt)
-    if area < 100:  # Minimum area for a digit
+    if area < 40:  # Minimum area for a digit (lowered for thin strokes)
         continue
     if area > 5000:  # Maximum area (avoid large blobs)
         continue
@@ -340,14 +340,14 @@ for cnt in contours:
     bx, by, bw, bh = cv2.boundingRect(cnt)
     aspect = bw / bh if bh > 0 else 0
 
-    # Filter by aspect ratio (digits are roughly square-ish)
-    if aspect > 3.0 or aspect < 0.2:
+    # Filter by aspect ratio (allow narrow "1" digits)
+    if aspect > 4.0 or aspect < 0.1:
         continue
 
-    # Filter by size (digits have reasonable dimensions)
-    if bw < 10 or bh < 15:
+    # Filter by size (lowered for small/thin digits)
+    if bw < 4 or bh < 8:
         continue
-    if bw > 80 or bh > 60:
+    if bw > 80 or bh > 80:
         continue
 
     # Extract the blob with some padding
