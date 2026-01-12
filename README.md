@@ -1,6 +1,58 @@
+# Email-Processor Pipeline
+
+Multi-Container-System zur automatischen Verarbeitung von Bestellformularen aus E-Mail-Anhängen.
+
+## Architektur
+
+```
+Input (.eml) → Orchestrator → OpenCV-Prep → Layout-Analyzer → ML-Inference → Output
+                    ↓              ↓              ↓               ↓
+              shared/input   shared/intermediate              shared/output
+```
+
+### Container
+
+| Container | Image | Funktion |
+|-----------|-------|----------|
+| `orchestrator` | python:3.11-slim | Workflow-Steuerung, Datei-Watcher |
+| `opencv-prep` | python:3.11-slim | EML→PDF→Bild, Deskew, Denoise, Crop |
+| `layout-analyzer` | python:3.11-slim | Formularfelder, Linien, Boxen erkennen |
+| `ml-inference` | nvcr.io/nvidia/l4t-ml:r36.2.0-py3 | EasyOCR mit GPU-Unterstützung |
+
+## Schnellstart
+
+```bash
+# Alle Container bauen
+docker compose build
+
+# Container starten
+docker compose up -d
+
+# Logs anzeigen
+docker compose logs -f
+```
+
+## Projektstruktur
+
+```
+email-processor/
+├── docker-compose.yml
+├── orchestrator/          # Workflow-Steuerung
+├── opencv-prep/           # Bildvorverarbeitung
+├── layout-analyzer/       # Formular-Erkennung
+├── ml-inference/          # OCR mit GPU
+└── shared/
+    ├── input/             # Eingehende .eml Dateien
+    ├── intermediate/      # Temporäre Verarbeitungsdaten
+    ├── output/            # Ergebnisse (JSON)
+    └── templates/         # Formularvorlagen, Scanner-Tool
+```
+
+---
+
 # Interaktiver Bestellungs-Scanner
 
-Web-basiertes Tool zur OCR-Erkennung von handschriftlichen Bestellmengen aus Formular-PDFs.
+Web-basiertes Tool zur manuellen OCR-Erkennung und Korrektur.
 
 ## Übersicht
 
