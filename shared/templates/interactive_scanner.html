@@ -1316,7 +1316,7 @@
             const deletedCount = initialCount - results.length;
             if (deletedCount > 0) {
                 setStatus(`${deletedCount} Objekt(e) gelöscht.`);
-                updateResultsTable();
+                updateResults();
                 updateStats();
             } else {
                 setStatus('Keine Objekte im markierten Bereich.');
@@ -1383,7 +1383,7 @@
             };
 
             results.push(newResult);
-            updateResultsTable();
+            updateResults();
             updateStats();
 
             // Focus on the new entry's input field
