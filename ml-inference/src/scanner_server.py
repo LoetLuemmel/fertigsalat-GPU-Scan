@@ -1222,8 +1222,8 @@ v_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 20))
 v_lines = cv2.morphologyEx(zone_binary, cv2.MORPH_OPEN, v_kernel)
 zone_binary = cv2.subtract(zone_binary, v_lines)
 
-# Dilate to connect fragmented strokes of same digit
-connect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+# Dilate slightly to connect fragmented strokes (2x2 is gentler)
+connect_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2, 2))
 zone_binary = cv2.dilate(zone_binary, connect_kernel, iterations=1)
 
 # Find contours (potential handwritten digits)
@@ -1233,22 +1233,22 @@ contours, _ = cv2.findContours(zone_binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_
 blob_id = 0
 for cnt in contours:
     area = cv2.contourArea(cnt)
-    if area < 60:  # Minimum area for a digit (balanced for thin strokes + noise)
+    if area < 80:  # Minimum area for a digit
         continue
-    if area > 5000:  # Maximum area (avoid large blobs)
+    if area > 4000:  # Maximum area (avoid large blobs)
         continue
 
     bx, by, bw, bh = cv2.boundingRect(cnt)
     aspect = bw / bh if bh > 0 else 0
 
-    # Filter by aspect ratio (allow narrow "1" digits)
-    if aspect > 4.0 or aspect < 0.1:
+    # Filter by aspect ratio (allow narrow "1" digits but not too extreme)
+    if aspect > 3.0 or aspect < 0.15:
         continue
 
-    # Filter by size (lowered for small/thin digits)
-    if bw < 4 or bh < 8:
+    # Filter by size
+    if bw < 6 or bh < 12:
         continue
-    if bw > 80 or bh > 80:
+    if bw > 60 or bh > 50:
         continue
 
     # Extract the blob with some padding
