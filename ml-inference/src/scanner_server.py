@@ -1222,6 +1222,10 @@ v_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 20))
 v_lines = cv2.morphologyEx(zone_binary, cv2.MORPH_OPEN, v_kernel)
 zone_binary = cv2.subtract(zone_binary, v_lines)
 
+# Dilate to connect fragmented strokes of same digit
+connect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+zone_binary = cv2.dilate(zone_binary, connect_kernel, iterations=1)
+
 # Find contours (potential handwritten digits)
 contours, _ = cv2.findContours(zone_binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -1229,7 +1233,7 @@ contours, _ = cv2.findContours(zone_binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_
 blob_id = 0
 for cnt in contours:
     area = cv2.contourArea(cnt)
-    if area < 40:  # Minimum area for a digit (lowered for thin strokes)
+    if area < 60:  # Minimum area for a digit (balanced for thin strokes + noise)
         continue
     if area > 5000:  # Maximum area (avoid large blobs)
         continue
