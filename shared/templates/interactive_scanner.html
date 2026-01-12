@@ -387,6 +387,16 @@
                 </div>
             </div>
 
+            <div class="panel">
+                <h3>Erkannte Objekte bearbeiten</h3>
+                <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Markieren Sie einen Bereich im Bild:</p>
+                <button class="btn zone-btn" id="btnDeleteObjects" onclick="setEditMode('delete')" style="background:#dc3545;">Objekte löschen</button>
+                <button class="btn zone-btn" id="btnAddObject" onclick="setEditMode('add')" style="background:#28a745;">Objekt hinzufügen</button>
+                <div id="editModeInfo" style="margin-top:10px; padding:8px; background:#0a3d62; border-radius:5px; font-size:12px; display:none;">
+                    <span id="editModeText"></span>
+                </div>
+            </div>
+
             <div class="panel" id="zonePanel" style="display:none;">
                 <h3>Zonen-Status</h3>
                 <div id="zoneInfo"></div>
@@ -507,9 +517,11 @@
             codes: null    // Produktnummern - orange
         };
         let activeZone = 'orders';  // Currently selected zone for drawing
+        let editMode = null;  // null, 'delete', 'add' - for object editing
 
         let isDrawing = false;
         let drawStart = null;
+        let editSelectionRect = null;  // Rectangle for delete/add selection
         let results = [];
         let currentReviewIndex = -1;
         let highlightedResultIndex = -1;
@@ -831,6 +843,48 @@
             }
 
             setStatus(`Zone "${ZONE_COLORS[zoneName].name}" ausgewählt. Zeichnen Sie im Bild.`);
+
+            // Deactivate edit mode when selecting a zone
+            editMode = null;
+            document.getElementById('editModeInfo').style.display = 'none';
+            document.getElementById('btnDeleteObjects').style.opacity = '0.5';
+            document.getElementById('btnDeleteObjects').style.border = 'none';
+            document.getElementById('btnAddObject').style.opacity = '0.5';
+            document.getElementById('btnAddObject').style.border = 'none';
+        }
+
+        function setEditMode(mode) {
+            editMode = mode;
+            editSelectionRect = null;
+
+            // Deactivate zone selection
+            activeZone = null;
+            document.querySelectorAll('.zone-btn').forEach(btn => {
+                btn.style.opacity = '0.5';
+                btn.style.border = 'none';
+            });
+            document.getElementById('activeZoneInfo').style.display = 'none';
+
+            // Update edit mode buttons
+            document.getElementById('btnDeleteObjects').style.opacity = mode === 'delete' ? '1' : '0.5';
+            document.getElementById('btnDeleteObjects').style.border = mode === 'delete' ? '3px solid white' : 'none';
+            document.getElementById('btnAddObject').style.opacity = mode === 'add' ? '1' : '0.5';
+            document.getElementById('btnAddObject').style.border = mode === 'add' ? '3px solid white' : 'none';
+
+            // Show edit mode info
+            const infoDiv = document.getElementById('editModeInfo');
+            const textSpan = document.getElementById('editModeText');
+            infoDiv.style.display = 'block';
+
+            if (mode === 'delete') {
+                textSpan.innerHTML = '<span style="color:#dc3545;">Löschen:</span> Ziehen Sie ein Rechteck, dann <strong>Backspace</strong> zum Löschen';
+                setStatus('Löschen-Modus: Ziehen Sie ein Rechteck um die zu löschenden Objekte, dann drücken Sie Backspace.');
+            } else if (mode === 'add') {
+                textSpan.innerHTML = '<span style="color:#28a745;">Hinzufügen:</span> Ziehen Sie ein Rechteck um ein Objekt hinzuzufügen';
+                setStatus('Hinzufügen-Modus: Ziehen Sie ein Rechteck um ein neues Objekt zu markieren.');
+            }
+
+            redraw();
         }
 
         function suggestZone() {
@@ -861,18 +915,42 @@
             const currentX = (e.clientX - rect.left) * scaleX;
             const currentY = (e.clientY - rect.top) * scaleY;
 
-            // Update the active zone
-            zones[activeZone] = {
-                x: Math.min(drawStart.x, currentX),
-                y: Math.min(drawStart.y, currentY),
-                width: Math.abs(currentX - drawStart.x),
-                height: Math.abs(currentY - drawStart.y)
-            };
+            // Edit mode: draw selection rectangle
+            if (editMode) {
+                editSelectionRect = {
+                    x: Math.min(drawStart.x, currentX),
+                    y: Math.min(drawStart.y, currentY),
+                    width: Math.abs(currentX - drawStart.x),
+                    height: Math.abs(currentY - drawStart.y)
+                };
+                redraw();
+                return;
+            }
+
+            // Zone mode: update the active zone
+            if (activeZone) {
+                zones[activeZone] = {
+                    x: Math.min(drawStart.x, currentX),
+                    y: Math.min(drawStart.y, currentY),
+                    width: Math.abs(currentX - drawStart.x),
+                    height: Math.abs(currentY - drawStart.y)
+                };
+            }
             redraw();
         }
 
         function endDraw(e) {
-            if (isDrawing && zones[activeZone] && zones[activeZone].width > 10 && zones[activeZone].height > 10) {
+            // Edit mode: handle add object
+            if (editMode === 'add' && editSelectionRect && editSelectionRect.width > 5 && editSelectionRect.height > 5) {
+                addObjectAtSelection(editSelectionRect);
+                editSelectionRect = null;
+                isDrawing = false;
+                redraw();
+                return;
+            }
+
+            // Zone mode
+            if (activeZone && isDrawing && zones[activeZone] && zones[activeZone].width > 10 && zones[activeZone].height > 10) {
                 updateZoneInfo();
                 checkScanReady();
                 setStatus(`Zone "${ZONE_COLORS[activeZone].name}" definiert.`);
@@ -1202,7 +1280,134 @@
                 // Store bounding box for click detection
                 r._index = i;
             });
+
+            // Draw edit selection rectangle
+            if (editSelectionRect && editMode) {
+                const color = editMode === 'delete' ? '#dc3545' : '#28a745';
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.strokeRect(editSelectionRect.x, editSelectionRect.y, editSelectionRect.width, editSelectionRect.height);
+                ctx.fillStyle = editMode === 'delete' ? 'rgba(220, 53, 69, 0.2)' : 'rgba(40, 167, 69, 0.2)';
+                ctx.fillRect(editSelectionRect.x, editSelectionRect.y, editSelectionRect.width, editSelectionRect.height);
+                ctx.setLineDash([]);
+            }
         }
+
+        // Delete objects in selection rectangle
+        function deleteObjectsInSelection() {
+            if (!editSelectionRect || editMode !== 'delete') return;
+
+            const sel = editSelectionRect;
+            const initialCount = results.length;
+
+            // Filter out objects that overlap with selection
+            results = results.filter(r => {
+                const overlaps = !(r.x + r.width < sel.x || r.x > sel.x + sel.width ||
+                                   r.y + r.height < sel.y || r.y > sel.y + sel.height);
+                return !overlaps;
+            });
+
+            const deletedCount = initialCount - results.length;
+            if (deletedCount > 0) {
+                setStatus(`${deletedCount} Objekt(e) gelöscht.`);
+                updateResultsTable();
+                updateStats();
+            } else {
+                setStatus('Keine Objekte im markierten Bereich.');
+            }
+
+            editSelectionRect = null;
+            redraw();
+        }
+
+        // Add new object at selection
+        function addObjectAtSelection(sel) {
+            if (!zones.orders) {
+                setStatus('Bitte zuerst die Bestellmengen-Zone definieren.');
+                return;
+            }
+
+            const zone = zones.orders;
+            const numRows = parseInt(document.getElementById('numRows').value) || 52;
+            const numCols = parseInt(document.getElementById('numCols').value) || 5;
+            const cellHeight = zone.height / numRows;
+            const cellWidth = zone.width / numCols;
+
+            // Calculate center of selection
+            const centerX = sel.x + sel.width / 2;
+            const centerY = sel.y + sel.height / 2;
+
+            // Determine row and column
+            const relX = centerX - zone.x;
+            const relY = centerY - zone.y;
+            const row = Math.floor(relY / cellHeight);
+            const col = Math.floor(relX / cellWidth);
+
+            if (row < 0 || row >= numRows || col < 0 || col >= numCols) {
+                setStatus('Auswahl liegt außerhalb der Bestellmengen-Zone.');
+                return;
+            }
+
+            const COLUMNS = ['Mo', 'Di', 'Mi', 'Do', 'Fr'];
+            const columnName = col < COLUMNS.length ? COLUMNS[col] : `Col${col + 1}`;
+
+            // Find product info for this row (from existing results or empty)
+            let productName = '';
+            let productCode = '';
+            const existingInRow = results.find(r => r.row === row + 1);
+            if (existingInRow) {
+                productName = existingInRow.product_name || '';
+                productCode = existingInRow.product_code || '';
+            }
+
+            // Create new result entry
+            const newResult = {
+                digit: '',
+                confidence: 1.0,
+                row: row + 1,
+                column: columnName,
+                product_name: productName,
+                product_code: productCode,
+                x: sel.x,
+                y: sel.y,
+                width: sel.width,
+                height: sel.height,
+                reviewed: false,
+                manuallyAdded: true
+            };
+
+            results.push(newResult);
+            updateResultsTable();
+            updateStats();
+
+            // Focus on the new entry's input field
+            setTimeout(() => {
+                const newIndex = results.length - 1;
+                const inputId = `digitInput_${newIndex}`;
+                const input = document.getElementById(inputId);
+                if (input) {
+                    input.focus();
+                    input.select();
+                    // Highlight the row
+                    highlightedResultIndex = newIndex;
+                    startHighlightAnimation();
+                    highlightResultRow(newIndex);
+                }
+            }, 100);
+
+            setStatus(`Neues Objekt in Zeile ${row + 1}, ${columnName} hinzugefügt. Bitte Menge eingeben.`);
+        }
+
+        // Keyboard handler for Backspace (delete)
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace' && editMode === 'delete' && editSelectionRect) {
+                // Don't delete if focus is in an input field
+                if (document.activeElement.tagName === 'INPUT') return;
+                e.preventDefault();
+                deleteObjectsInSelection();
+            }
+        });
 
         async function scanZone() {
             if (!zones.orders) return;
