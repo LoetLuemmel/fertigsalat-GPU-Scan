@@ -1,3 +1,5 @@
-# Note: Most dependencies come from the base image
-# Additional packages if needed
+# Note: Most dependencies come from the base image (TensorFlow, TensorRT, OpenCV)
+# Additional packages
 numpy
+tf2onnx
+pycuda
