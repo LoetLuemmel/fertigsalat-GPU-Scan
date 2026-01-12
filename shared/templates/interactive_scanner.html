@@ -1404,8 +1404,18 @@
             setStatus(`Neues Objekt in Zeile ${row + 1}, ${columnName} hinzugefügt. Bitte Menge eingeben.`);
         }
 
-        // Keyboard handler for Backspace (delete)
+        // Keyboard handler for Backspace (delete) and Escape (cancel)
         document.addEventListener('keydown', function(e) {
+            // Escape: cancel selection
+            if (e.key === 'Escape' && editMode && editSelectionRect) {
+                editSelectionRect = null;
+                isDrawing = false;
+                redraw();
+                setStatus('Auswahl abgebrochen.');
+                return;
+            }
+
+            // Backspace: delete objects in selection
             if (e.key === 'Backspace' && editMode === 'delete' && editSelectionRect) {
                 // Don't delete if focus is in an input field
                 if (document.activeElement.tagName === 'INPUT') return;
