@@ -345,10 +345,6 @@
             <img src="/fertigsalat_Logo.png" alt="Fertigsalat Logo" style="height: 50px;">
             <h1 style="margin: 0;">Interaktiver Bestellungs-Scanner <span class="mode-indicator" id="modeIndicator">Modus: Zone definieren</span></h1>
         </div>
-        <div id="gpuStatus" style="display: flex; align-items: center; gap: 8px; padding: 8px 15px; border-radius: 5px; background: #333; font-size: 14px;">
-            <span id="gpuIndicator" style="width: 12px; height: 12px; border-radius: 50%; background: #666;"></span>
-            <span id="gpuLabel">GPU: Prüfe...</span>
-        </div>
     </header>
 
     <div class="container">
@@ -379,9 +375,9 @@
             <div class="panel">
                 <h3>Zonen definieren</h3>
                 <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Klicken Sie einen Button und zeichnen Sie die Zone im Bild:</p>
-                <button class="btn zone-btn" id="btnZoneOrders" onclick="setActiveZone('orders')" style="background:#00d4ff; color:#000;">Bestellmengen (Mo-Fr)</button>
+                <button class="btn zone-btn" id="btnZoneOrders" onclick="handleOrdersButtonClick(event)" style="background:#00d4ff; color:#000;">Bestellmengen (0/2)</button>
                 <button class="btn zone-btn" id="btnZoneNames" onclick="setActiveZone('names')" style="background:#00ff00; color:#000;">Produktnamen</button>
-                <button class="btn zone-btn" id="btnZoneCodes" onclick="setActiveZone('codes')" style="background:#ff9800; color:#000;">Produktnummern</button>
+                <button class="btn zone-btn" id="btnZoneCodes" onclick="handleCodesButtonClick(event)" style="background:#ff9800; color:#000;">Produktnummern (0/3)</button>
                 <div id="activeZoneInfo" style="margin-top:10px; padding:8px; background:#0a3d62; border-radius:5px; font-size:12px;">
                     Aktiv: <strong id="activeZoneName">Bestellmengen</strong>
                 </div>
@@ -511,19 +507,29 @@
         let imageData = null;
 
         // Three separate zones
+        // Note: orders and codes are arrays (multiple zones), names is single object
         let zones = {
-            orders: null,  // Bestellmengen (Mo-Fr) - cyan
+            orders: [],    // Bestellmengen - cyan (array, max 2: Mo-Fr + Sa)
             names: null,   // Produktnamen - green
-            codes: null    // Produktnummern - orange
+            codes: []      // Produktnummern - orange (array, max 3)
         };
+        const MAX_ORDER_ZONES = 2;  // Mo-Fr + Samstag
+        const MAX_CODE_ZONES = 3;
         let activeZone = 'orders';  // Currently selected zone for drawing
         let editMode = null;  // null, 'delete', 'add' - for object editing
 
         let isDrawing = false;
         let drawStart = null;
         let editSelectionRect = null;  // Rectangle for delete/add selection
+        let currentDrawingRect = null; // Temporary rectangle while drawing (for codes array)
         let results = [];
         let currentReviewIndex = -1;
+
+        // Corner/edge dragging state
+        const HANDLE_SIZE = 12;  // Size of corner handles in pixels
+        const HANDLE_HIT_RADIUS = 15;  // Hit detection radius
+        let dragState = null;  // { zoneKey, codesIndex?, handle: 'tl'|'tr'|'bl'|'br'|'move', startX, startY, origZone }
+        // Handle positions: tl=top-left, tr=top-right, bl=bottom-left, br=bottom-right, move=center
 
         // Static product lookup table (quasi-static form layout)
         // Row index (0-based) -> { name, code }
@@ -638,6 +644,9 @@
 
             const file = input.files[0];
 
+            // Reset state before loading new file
+            resetState();
+
             if (file.name.toLowerCase().endsWith('.eml')) {
                 loadEmlFile(file);
             } else {
@@ -648,13 +657,78 @@
             input.value = '';
         }
 
-        function loadImageFile(file) {
-            setStatus('Lade Bild: ' + file.name);
+        // Reset all state when loading a new file
+        function resetState() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Revoke previous URL if exists
-            if (imageData) {
+            // Reset image references
+            if (imageData && imageData.startsWith('blob:')) {
                 URL.revokeObjectURL(imageData);
             }
+            image = null;
+            imageData = null;
+
+            // Reset zones
+            zones = { orders: [], names: null, codes: [] };
+            activeZone = 'orders';
+            updateOrdersButtonText();
+            updateCodesButtonText();
+
+            // Reset edit mode
+            editMode = null;
+            editSelectionRect = null;
+            document.getElementById('editModeInfo').style.display = 'none';
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.style.opacity = '1';
+                btn.style.border = 'none';
+            });
+
+            // Reset results
+            results = [];
+            currentReviewIndex = -1;
+            highlightedResultIndex = -1;
+
+            // Stop highlight animation
+            if (highlightAnimationId) {
+                cancelAnimationFrame(highlightAnimationId);
+                highlightAnimationId = null;
+            }
+            highlightPulse = 0;
+
+            // Reset drawing state
+            isDrawing = false;
+            drawStart = null;
+
+            // Reset UI elements
+            document.getElementById('scanBtn').disabled = true;
+            document.getElementById('reviewBtn').disabled = true;
+            document.getElementById('resultsBody').innerHTML =
+                '<tr><td colspan="5" style="text-align:center;color:#666;">Noch keine Ergebnisse</td></tr>';
+            document.getElementById('orderCount').textContent = '0';
+
+            // Reset statistics
+            document.getElementById('statTotal').textContent = '0';
+            document.getElementById('statReviewed').textContent = '0';
+            document.getElementById('statPending').textContent = '0';
+
+            // Reset zone info panel
+            document.getElementById('zonePanel').style.display = 'none';
+            updateZoneInfo();
+
+            // Reset zone button styles
+            setActiveZone('orders');
+
+            // Reset mode indicator
+            setMode('zone');
+            setGuideStep('load');
+
+            // Reset status
+            setStatus('Bereit. Lade eine Datei...');
+        }
+
+        function loadImageFile(file) {
+            setStatus('Lade Bild: ' + file.name);
 
             imageData = URL.createObjectURL(file);
 
@@ -848,11 +922,6 @@
 
             setStatus('Lade Anhang: ' + attachment.filename, true);
 
-            // Revoke previous URL if exists
-            if (imageData && imageData.startsWith('blob:')) {
-                URL.revokeObjectURL(imageData);
-            }
-
             imageData = attachment.data;
 
             // Build processing status message
@@ -966,25 +1035,209 @@
             updateZoneInfo();
         }
 
-        function startDraw(e) {
-            if (!image) return;
-            isDrawing = true;
+        // Helper: Get canvas coordinates from mouse event
+        function getCanvasCoords(e) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
-            drawStart = {
+            return {
                 x: (e.clientX - rect.left) * scaleX,
                 y: (e.clientY - rect.top) * scaleY
             };
         }
 
+        // Helper: Get handle positions for a zone
+        function getZoneHandles(zone) {
+            if (!zone) return null;
+            return {
+                tl: { x: zone.x, y: zone.y },  // top-left
+                tr: { x: zone.x + zone.width, y: zone.y },  // top-right
+                bl: { x: zone.x, y: zone.y + zone.height },  // bottom-left
+                br: { x: zone.x + zone.width, y: zone.y + zone.height },  // bottom-right
+                center: { x: zone.x + zone.width / 2, y: zone.y + zone.height / 2 }  // center (for moving)
+            };
+        }
+
+        // Helper: Check if point is near a handle
+        function hitTestHandle(px, py, zone) {
+            if (!zone) return null;
+            const handles = getZoneHandles(zone);
+
+            // Check corners first (higher priority)
+            for (const [handleName, pos] of Object.entries(handles)) {
+                if (handleName === 'center') continue;  // Check center separately
+                const dist = Math.sqrt((px - pos.x) ** 2 + (py - pos.y) ** 2);
+                if (dist <= HANDLE_HIT_RADIUS) {
+                    return handleName;
+                }
+            }
+
+            // Check if inside zone (for moving)
+            if (px >= zone.x && px <= zone.x + zone.width &&
+                py >= zone.y && py <= zone.y + zone.height) {
+                return 'move';
+            }
+
+            return null;
+        }
+
+        // Helper: Find which zone and handle was clicked
+        function findClickedZoneHandle(px, py) {
+            // Check all zones, prioritize the active zone
+            const zoneOrder = activeZone ?
+                [activeZone, ...Object.keys(zones).filter(k => k !== activeZone)] :
+                Object.keys(zones);
+
+            for (const key of zoneOrder) {
+                if (key === 'orders') {
+                    // Check orders array (in reverse order - last drawn on top)
+                    for (let i = zones.orders.length - 1; i >= 0; i--) {
+                        const handle = hitTestHandle(px, py, zones.orders[i]);
+                        if (handle) {
+                            return { zoneKey: 'orders', ordersIndex: i, handle };
+                        }
+                    }
+                } else if (key === 'codes') {
+                    // Check codes array (in reverse order - last drawn on top)
+                    for (let i = zones.codes.length - 1; i >= 0; i--) {
+                        const handle = hitTestHandle(px, py, zones.codes[i]);
+                        if (handle) {
+                            return { zoneKey: 'codes', codesIndex: i, handle };
+                        }
+                    }
+                } else {
+                    const handle = hitTestHandle(px, py, zones[key]);
+                    if (handle) {
+                        return { zoneKey: key, handle };
+                    }
+                }
+            }
+            return null;
+        }
+
+        // Helper: Get cursor style for handle
+        function getCursorForHandle(handle) {
+            switch (handle) {
+                case 'tl': case 'br': return 'nwse-resize';
+                case 'tr': case 'bl': return 'nesw-resize';
+                case 'move': return 'move';
+                default: return 'crosshair';
+            }
+        }
+
+        function startDraw(e) {
+            if (!image) return;
+
+            const coords = getCanvasCoords(e);
+
+            // First, check if we clicked on a zone handle
+            const hit = findClickedZoneHandle(coords.x, coords.y);
+            if (hit) {
+                // Start dragging the handle
+                let zone;
+                if (hit.zoneKey === 'orders') {
+                    zone = zones.orders[hit.ordersIndex];
+                } else if (hit.zoneKey === 'codes') {
+                    zone = zones.codes[hit.codesIndex];
+                } else {
+                    zone = zones[hit.zoneKey];
+                }
+                dragState = {
+                    zoneKey: hit.zoneKey,
+                    ordersIndex: hit.ordersIndex,
+                    codesIndex: hit.codesIndex,
+                    handle: hit.handle,
+                    startX: coords.x,
+                    startY: coords.y,
+                    origZone: { ...zone }  // Copy original zone
+                };
+                canvas.style.cursor = getCursorForHandle(hit.handle);
+                return;
+            }
+
+            // Otherwise, start drawing a new zone
+            isDrawing = true;
+            drawStart = coords;
+        }
+
         function drawing(e) {
-            if (!isDrawing || !drawStart) return;
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            const currentX = (e.clientX - rect.left) * scaleX;
-            const currentY = (e.clientY - rect.top) * scaleY;
+            const coords = getCanvasCoords(e);
+
+            // Handle dragging (corner/move)
+            if (dragState) {
+                const dx = coords.x - dragState.startX;
+                const dy = coords.y - dragState.startY;
+                const orig = dragState.origZone;
+                let newZone;
+
+                switch (dragState.handle) {
+                    case 'tl':  // Top-left: adjust x, y, width, height
+                        newZone = {
+                            x: orig.x + dx,
+                            y: orig.y + dy,
+                            width: orig.width - dx,
+                            height: orig.height - dy
+                        };
+                        break;
+                    case 'tr':  // Top-right: adjust y, width, height
+                        newZone = {
+                            x: orig.x,
+                            y: orig.y + dy,
+                            width: orig.width + dx,
+                            height: orig.height - dy
+                        };
+                        break;
+                    case 'bl':  // Bottom-left: adjust x, width, height
+                        newZone = {
+                            x: orig.x + dx,
+                            y: orig.y,
+                            width: orig.width - dx,
+                            height: orig.height + dy
+                        };
+                        break;
+                    case 'br':  // Bottom-right: adjust width, height
+                        newZone = {
+                            x: orig.x,
+                            y: orig.y,
+                            width: orig.width + dx,
+                            height: orig.height + dy
+                        };
+                        break;
+                    case 'move':  // Move entire zone
+                        newZone = {
+                            x: orig.x + dx,
+                            y: orig.y + dy,
+                            width: orig.width,
+                            height: orig.height
+                        };
+                        break;
+                }
+
+                // Ensure minimum size
+                if (newZone && newZone.width >= 20 && newZone.height >= 20) {
+                    if (dragState.zoneKey === 'orders') {
+                        zones.orders[dragState.ordersIndex] = newZone;
+                    } else if (dragState.zoneKey === 'codes') {
+                        zones.codes[dragState.codesIndex] = newZone;
+                    } else {
+                        zones[dragState.zoneKey] = newZone;
+                    }
+                }
+
+                redraw();
+                return;
+            }
+
+            // Not drawing? Just update cursor based on hover
+            if (!isDrawing || !drawStart) {
+                // Update cursor based on what's under mouse
+                const hit = findClickedZoneHandle(coords.x, coords.y);
+                canvas.style.cursor = hit ? getCursorForHandle(hit.handle) : 'crosshair';
+                return;
+            }
+
+            const currentX = coords.x;
+            const currentY = coords.y;
 
             // Edit mode: draw selection rectangle
             if (editMode) {
@@ -1000,17 +1253,43 @@
 
             // Zone mode: update the active zone
             if (activeZone) {
-                zones[activeZone] = {
+                const newRect = {
                     x: Math.min(drawStart.x, currentX),
                     y: Math.min(drawStart.y, currentY),
                     width: Math.abs(currentX - drawStart.x),
                     height: Math.abs(currentY - drawStart.y)
                 };
+
+                if (activeZone === 'codes' || activeZone === 'orders') {
+                    // For codes/orders: use temporary drawing rect (will be added to array on endDraw)
+                    currentDrawingRect = newRect;
+                } else {
+                    zones[activeZone] = newRect;
+                }
             }
             redraw();
         }
 
         function endDraw(e) {
+            // End drag operation
+            if (dragState) {
+                let zoneName;
+                if (dragState.zoneKey === 'orders') {
+                    const label = dragState.ordersIndex === 0 ? 'Mo-Fr' : 'Sa';
+                    zoneName = `Bestellmengen (${label})`;
+                } else if (dragState.zoneKey === 'codes') {
+                    zoneName = `Produktnummern ${dragState.codesIndex + 1}`;
+                } else {
+                    zoneName = ZONE_COLORS[dragState.zoneKey].name;
+                }
+                setStatus(`Zone "${zoneName}" angepasst.`);
+                dragState = null;
+                canvas.style.cursor = 'crosshair';
+                updateZoneInfo();
+                redraw();
+                return;
+            }
+
             // Edit mode: handle add object
             if (editMode === 'add' && editSelectionRect && editSelectionRect.width > 5 && editSelectionRect.height > 5) {
                 addObjectAtSelection(editSelectionRect);
@@ -1021,12 +1300,37 @@
             }
 
             // Zone mode
-            if (activeZone && isDrawing && zones[activeZone] && zones[activeZone].width > 10 && zones[activeZone].height > 10) {
+            if (activeZone === 'orders' && isDrawing && currentDrawingRect && currentDrawingRect.width > 10 && currentDrawingRect.height > 10) {
+                // Add to orders array (max 2)
+                if (zones.orders.length < MAX_ORDER_ZONES) {
+                    zones.orders.push(currentDrawingRect);
+                    updateZoneInfo();
+                    updateOrdersButtonText();
+                    checkScanReady();
+                    setStatus(`Bestellmengen-Zone ${zones.orders.length}/${MAX_ORDER_ZONES} hinzugefügt.`);
+                } else {
+                    setStatus(`Maximum ${MAX_ORDER_ZONES} Bestellmengen-Zonen erreicht. Shift+Klick zum Löschen.`);
+                }
+                currentDrawingRect = null;
+            } else if (activeZone === 'codes' && isDrawing && currentDrawingRect && currentDrawingRect.width > 10 && currentDrawingRect.height > 10) {
+                // Add to codes array (max 3)
+                if (zones.codes.length < MAX_CODE_ZONES) {
+                    zones.codes.push(currentDrawingRect);
+                    updateZoneInfo();
+                    updateCodesButtonText();
+                    checkScanReady();
+                    setStatus(`Produktnummern-Zone ${zones.codes.length}/${MAX_CODE_ZONES} hinzugefügt.`);
+                } else {
+                    setStatus(`Maximum ${MAX_CODE_ZONES} Produktnummern-Zonen erreicht. Shift+Klick zum Löschen.`);
+                }
+                currentDrawingRect = null;
+            } else if (activeZone === 'names' && isDrawing && zones.names && zones.names.width > 10 && zones.names.height > 10) {
                 updateZoneInfo();
                 checkScanReady();
-                setStatus(`Zone "${ZONE_COLORS[activeZone].name}" definiert.`);
+                setStatus(`Zone "${ZONE_COLORS.names.name}" definiert.`);
             }
             isDrawing = false;
+            currentDrawingRect = null;
         }
 
         function handleCanvasClick(e) {
@@ -1121,26 +1425,95 @@
         function updateZoneInfo() {
             let html = '';
             for (const [key, color] of Object.entries(ZONE_COLORS)) {
-                const z = zones[key];
-                if (z) {
-                    html += `<div style="color:${color.stroke}; margin:5px 0;">✓ ${color.name}: ${Math.round(z.width)}x${Math.round(z.height)}</div>`;
+                if (key === 'orders') {
+                    // Handle orders as array
+                    if (zones.orders.length > 0) {
+                        html += `<div style="color:${color.stroke}; margin:5px 0;">✓ ${color.name}: ${zones.orders.length}/${MAX_ORDER_ZONES} Zonen</div>`;
+                        zones.orders.forEach((z, i) => {
+                            const label = i === 0 ? 'Mo-Fr' : 'Sa';
+                            html += `<div style="color:${color.stroke}; margin:2px 0 2px 15px; font-size:11px;">${label}: ${Math.round(z.width)}x${Math.round(z.height)}</div>`;
+                        });
+                    } else {
+                        html += `<div style="color:#666; margin:5px 0;">○ ${color.name}: nicht definiert (0/${MAX_ORDER_ZONES})</div>`;
+                    }
+                } else if (key === 'codes') {
+                    // Handle codes as array
+                    if (zones.codes.length > 0) {
+                        html += `<div style="color:${color.stroke}; margin:5px 0;">✓ ${color.name}: ${zones.codes.length}/${MAX_CODE_ZONES} Zonen</div>`;
+                        zones.codes.forEach((z, i) => {
+                            html += `<div style="color:${color.stroke}; margin:2px 0 2px 15px; font-size:11px;">Zone ${i+1}: ${Math.round(z.width)}x${Math.round(z.height)}</div>`;
+                        });
+                    } else {
+                        html += `<div style="color:#666; margin:5px 0;">○ ${color.name}: nicht definiert (0/${MAX_CODE_ZONES})</div>`;
+                    }
                 } else {
-                    html += `<div style="color:#666; margin:5px 0;">○ ${color.name}: nicht definiert</div>`;
+                    // Single zone (names)
+                    const z = zones[key];
+                    if (z) {
+                        html += `<div style="color:${color.stroke}; margin:5px 0;">✓ ${color.name}: ${Math.round(z.width)}x${Math.round(z.height)}</div>`;
+                    } else {
+                        html += `<div style="color:#666; margin:5px 0;">○ ${color.name}: nicht definiert</div>`;
+                    }
                 }
             }
             document.getElementById('zoneInfo').innerHTML = html;
         }
 
+        function updateOrdersButtonText() {
+            const btn = document.getElementById('btnZoneOrders');
+            if (btn) {
+                btn.textContent = `Bestellmengen (${zones.orders.length}/${MAX_ORDER_ZONES})`;
+            }
+        }
+
+        function handleOrdersButtonClick(event) {
+            if (event.shiftKey && zones.orders.length > 0) {
+                // Shift+Click: remove last orders zone
+                zones.orders.pop();
+                updateOrdersButtonText();
+                updateZoneInfo();
+                checkScanReady();
+                redraw();
+                setStatus(`Letzte Bestellmengen-Zone gelöscht. (${zones.orders.length}/${MAX_ORDER_ZONES})`);
+            } else {
+                // Normal click: activate orders zone for drawing
+                setActiveZone('orders');
+            }
+        }
+
+        function updateCodesButtonText() {
+            const btn = document.getElementById('btnZoneCodes');
+            if (btn) {
+                btn.textContent = `Produktnummern (${zones.codes.length}/${MAX_CODE_ZONES})`;
+            }
+        }
+
+        function handleCodesButtonClick(event) {
+            if (event.shiftKey && zones.codes.length > 0) {
+                // Shift+Click: remove last codes zone
+                zones.codes.pop();
+                updateCodesButtonText();
+                updateZoneInfo();
+                redraw();
+                setStatus(`Letzte Produktnummern-Zone gelöscht. (${zones.codes.length}/${MAX_CODE_ZONES})`);
+            } else {
+                // Normal click: activate codes zone for drawing
+                setActiveZone('codes');
+            }
+        }
+
         function checkScanReady() {
-            // Enable scan if at least orders zone is defined
-            const ready = zones.orders !== null;
+            // Enable scan if at least one orders zone is defined
+            const ready = zones.orders.length > 0;
             document.getElementById('scanBtn').disabled = !ready;
             document.getElementById('zonePanel').style.display = 'block';
         }
 
         function clearAllZones() {
-            zones = { orders: null, names: null, codes: null };
+            zones = { orders: [], names: null, codes: [] };
             results = [];
+            updateOrdersButtonText();
+            updateCodesButtonText();
             document.getElementById('scanBtn').disabled = true;
             document.getElementById('reviewBtn').disabled = true;
             document.getElementById('resultsBody').innerHTML =
@@ -1187,21 +1560,24 @@
                     const scaleX = canvas.width / data.imageWidth;
                     const scaleY = canvas.height / data.imageHeight;
 
-                    zones.orders = {
+                    // Orders zone as array (first element is Mo-Fr)
+                    zones.orders = [{
                         x: data.zone.x * scaleX,
                         y: data.zone.y * scaleY,
                         width: data.zone.width * scaleX,
                         height: data.zone.height * scaleY
-                    };
+                    }];
+                    updateOrdersButtonText();
 
-                    // Apply product codes zone if detected
+                    // Apply product codes zone if detected (add to array)
                     if (data.zoneCodes) {
-                        zones.codes = {
+                        zones.codes = [{
                             x: data.zoneCodes.x * scaleX,
                             y: data.zoneCodes.y * scaleY,
                             width: data.zoneCodes.width * scaleX,
                             height: data.zoneCodes.height * scaleY
-                        };
+                        }];
+                        updateCodesButtonText();
                         console.log('Product codes zone detected:', zones.codes);
                     }
 
@@ -1252,30 +1628,111 @@
             if (!image) return;
             ctx.drawImage(image, 0, 0);
 
-            // Draw all three zones
-            for (const [key, z] of Object.entries(zones)) {
-                if (!z) continue;
-
+            // Draw all zones
+            for (const [key, value] of Object.entries(zones)) {
                 const color = ZONE_COLORS[key];
 
-                // Draw zone rectangle
-                ctx.strokeStyle = color.stroke;
-                ctx.lineWidth = key === activeZone ? 3 : 2;
-                ctx.strokeRect(z.x, z.y, z.width, z.height);
-                ctx.fillStyle = color.fill;
-                ctx.fillRect(z.x, z.y, z.width, z.height);
+                if (key === 'orders') {
+                    // Draw all orders zones (array)
+                    zones.orders.forEach((z, i) => {
+                        ctx.strokeStyle = color.stroke;
+                        ctx.lineWidth = (activeZone === 'orders') ? 3 : 2;
+                        ctx.strokeRect(z.x, z.y, z.width, z.height);
+                        ctx.fillStyle = color.fill;
+                        ctx.fillRect(z.x, z.y, z.width, z.height);
 
-                // Label
-                ctx.fillStyle = color.stroke;
-                ctx.font = 'bold 12px sans-serif';
-                ctx.fillText(color.name, z.x + 5, z.y - 5);
+                        // Label with index
+                        const label = i === 0 ? 'Mo-Fr' : 'Sa';
+                        ctx.fillStyle = color.stroke;
+                        ctx.font = 'bold 12px sans-serif';
+                        ctx.fillText(`${color.name} (${label})`, z.x + 5, z.y - 5);
+                    });
+                } else if (key === 'codes') {
+                    // Draw all codes zones (array)
+                    zones.codes.forEach((z, i) => {
+                        ctx.strokeStyle = color.stroke;
+                        ctx.lineWidth = (activeZone === 'codes') ? 3 : 2;
+                        ctx.strokeRect(z.x, z.y, z.width, z.height);
+                        ctx.fillStyle = color.fill;
+                        ctx.fillRect(z.x, z.y, z.width, z.height);
+
+                        // Label with index
+                        ctx.fillStyle = color.stroke;
+                        ctx.font = 'bold 12px sans-serif';
+                        ctx.fillText(`${color.name} ${i+1}`, z.x + 5, z.y - 5);
+                    });
+                } else {
+                    // Single zone (names)
+                    const z = value;
+                    if (!z) continue;
+
+                    ctx.strokeStyle = color.stroke;
+                    ctx.lineWidth = key === activeZone ? 3 : 2;
+                    ctx.strokeRect(z.x, z.y, z.width, z.height);
+                    ctx.fillStyle = color.fill;
+                    ctx.fillRect(z.x, z.y, z.width, z.height);
+
+                    // Label
+                    ctx.fillStyle = color.stroke;
+                    ctx.font = 'bold 12px sans-serif';
+                    ctx.fillText(color.name, z.x + 5, z.y - 5);
+                }
             }
 
-            // Draw grid on orders zone
-            const zone = zones.orders;
-            if (zone) {
+            // Draw current drawing rect for orders/codes (while dragging)
+            if ((activeZone === 'codes' || activeZone === 'orders') && currentDrawingRect) {
+                const color = ZONE_COLORS[activeZone];
+                ctx.strokeStyle = color.stroke;
+                ctx.lineWidth = 3;
+                ctx.setLineDash([5, 5]);
+                ctx.strokeRect(currentDrawingRect.x, currentDrawingRect.y, currentDrawingRect.width, currentDrawingRect.height);
+                ctx.setLineDash([]);
+                ctx.fillStyle = color.fill;
+                ctx.fillRect(currentDrawingRect.x, currentDrawingRect.y, currentDrawingRect.width, currentDrawingRect.height);
+            }
+
+            // Draw corner handles for all zones
+            function drawHandles(zone, color, isActive) {
+                if (!zone) return;
+                const handles = getZoneHandles(zone);
+                const size = HANDLE_SIZE;
+                const halfSize = size / 2;
+
+                for (const [handleName, pos] of Object.entries(handles)) {
+                    if (handleName === 'center') continue;  // Don't draw center handle
+
+                    // Draw handle square
+                    ctx.fillStyle = isActive ? color : '#ffffff';
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2;
+                    ctx.fillRect(pos.x - halfSize, pos.y - halfSize, size, size);
+                    ctx.strokeRect(pos.x - halfSize, pos.y - halfSize, size, size);
+                }
+            }
+
+            // Draw handles for all zones
+            for (const [key, value] of Object.entries(zones)) {
+                const color = ZONE_COLORS[key].stroke;
+                const isActive = key === activeZone;
+
+                if (key === 'orders') {
+                    zones.orders.forEach((z, i) => {
+                        drawHandles(z, color, isActive);
+                    });
+                } else if (key === 'codes') {
+                    zones.codes.forEach((z, i) => {
+                        drawHandles(z, color, isActive);
+                    });
+                } else if (value) {
+                    drawHandles(value, color, isActive);
+                }
+            }
+
+            // Draw grid on all orders zones
+            zones.orders.forEach((zone, zoneIdx) => {
                 const numRows = parseInt(document.getElementById('numRows').value) || 52;
-                const numCols = parseInt(document.getElementById('numCols').value) || 5;
+                // First zone (Mo-Fr) has 5 cols, second zone (Sa) has 1 col
+                const numCols = zoneIdx === 0 ? (parseInt(document.getElementById('numCols').value) || 5) : 1;
                 const cellWidth = zone.width / numCols;
                 const cellHeight = zone.height / numRows;
 
@@ -1298,14 +1755,14 @@
                     ctx.stroke();
                 }
 
-                // Draw column headers (Mo, Di, Mi, Do, Fr)
-                const days = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+                // Draw column headers
+                const days = zoneIdx === 0 ? ['Mo', 'Di', 'Mi', 'Do', 'Fr'] : ['Sa'];
                 ctx.fillStyle = '#00d4ff';
                 ctx.font = 'bold 14px sans-serif';
                 for (let i = 0; i < numCols && i < days.length; i++) {
                     ctx.fillText(days[i], zone.x + i * cellWidth + cellWidth/2 - 10, zone.y - 20);
                 }
-            }
+            });
 
             // Draw detected cells
             results.forEach((r, i) => {
@@ -1493,25 +1950,17 @@
 
             document.getElementById('scanBtn').disabled = true;
 
-            // Show GPU as active during scan
-            if (gpuAvailable) {
-                setGpuStatus('active');
-            }
-
-            const numRows = parseInt(document.getElementById('numRows').value) || 59;
-            const numCols = parseInt(document.getElementById('numCols').value) || 6;
-
             try {
-                // Scan blobs (order quantities)
-                setStatus('Erkenne Bestellmengen...', true);
+                // Row-based scanning: Find orders and scan horizontally for product info
+                setStatus('Scanne Bestellungen und Produktinfos...', true);
 
-                const response = await fetch('/api/scan-zone', {
+                const response = await fetch('/api/scan-row-based', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         zone: zones.orders,
-                        numRows: numRows,
-                        numCols: numCols,
+                        zoneNames: zones.names,
+                        zoneCodes: zones.codes,
                         imageWidth: canvas.width,
                         imageHeight: canvas.height
                     })
@@ -1522,18 +1971,22 @@
                 if (data.error) {
                     setStatus('Fehler: ' + data.error);
                     document.getElementById('scanBtn').disabled = false;
-                    if (gpuAvailable) setGpuStatus('ready');
                     return;
                 }
 
                 results = data.results || [];
 
-                // Assign product names and codes from static lookup table
+                // Fallback to static table if OCR didn't find product info
                 results.forEach(r => {
-                    const rowIndex = r.row - 1;  // Convert to 0-based
-                    const productInfo = getProductInfo(rowIndex);
-                    r.product_name = productInfo.name;
-                    r.product_code = productInfo.code;
+                    if (!r.product_code || !r.product_name) {
+                        // Try to determine row from y_center
+                        const rowHeight = zones.orders.height / 53;
+                        const rowIndex = Math.floor((r.y_center - zones.orders.y) / rowHeight);
+                        const staticInfo = getProductInfo(rowIndex);
+
+                        if (!r.product_code) r.product_code = staticInfo.code;
+                        if (!r.product_name) r.product_name = staticInfo.name;
+                    }
                 });
 
                 updateResults();
@@ -1542,19 +1995,17 @@
 
                 document.getElementById('scanBtn').disabled = false;
                 document.getElementById('reviewBtn').disabled = results.length === 0;
-                if (gpuAvailable) setGpuStatus('ready');
 
                 const pending = results.filter(r => !r.reviewed && r.confidence < 0.7).length;
                 setStatus(`Scan abgeschlossen: ${results.length} Einträge, ${pending} zur Überprüfung.`);
                 setMode('review');
-                setGuideStep('none');  // Stop blinking after scan
+                setGuideStep('none');
                 document.getElementById('instructions').innerHTML =
                     '<strong>Schritt 4:</strong> Überprüfen Sie die Ergebnisse. Klicken Sie auf eine Zeile oder "Nächstes prüfen" um unsichere Erkennungen zu korrigieren.';
 
             } catch (err) {
                 setStatus('Fehler: ' + err.message);
                 document.getElementById('scanBtn').disabled = false;
-                if (gpuAvailable) setGpuStatus('ready');
             }
         }
 
@@ -1829,57 +2280,6 @@
         // Load training stats on page load
         loadTrainingStats();
 
-        // GPU status tracking
-        let gpuAvailable = false;
-
-        // Check GPU status
-        async function checkGpuStatus() {
-            try {
-                const response = await fetch('/api/gpu-status');
-                const data = await response.json();
-                gpuAvailable = data.gpu_available;
-                setGpuStatus(gpuAvailable ? 'ready' : 'cpu');
-            } catch (err) {
-                gpuAvailable = false;
-                setGpuStatus('error');
-            }
-        }
-
-        // Set GPU status indicator: 'active' (green), 'ready' (yellow), 'cpu' (orange), 'error' (red)
-        function setGpuStatus(status) {
-            const indicator = document.getElementById('gpuIndicator');
-            const label = document.getElementById('gpuLabel');
-
-            switch (status) {
-                case 'active':
-                    indicator.style.background = '#00ff00';
-                    indicator.style.boxShadow = '0 0 8px #00ff00';
-                    label.textContent = 'GPU aktiv';
-                    label.style.color = '#00ff00';
-                    break;
-                case 'ready':
-                    indicator.style.background = '#ffcc00';
-                    indicator.style.boxShadow = '0 0 5px #ffcc00';
-                    label.textContent = 'GPU bereit';
-                    label.style.color = '#ffcc00';
-                    break;
-                case 'cpu':
-                    indicator.style.background = '#ff6600';
-                    indicator.style.boxShadow = 'none';
-                    label.textContent = 'CPU Modus';
-                    label.style.color = '#ff6600';
-                    break;
-                case 'error':
-                    indicator.style.background = '#ff0000';
-                    indicator.style.boxShadow = 'none';
-                    label.textContent = 'GPU: Fehler';
-                    label.style.color = '#ff0000';
-                    break;
-            }
-        }
-
-        // Check GPU status on page load
-        checkGpuStatus();
     </script>
 </body>
 </html>

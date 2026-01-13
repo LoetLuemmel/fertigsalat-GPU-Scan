@@ -378,17 +378,20 @@ def save_image_for_scanner(img_bytes, filename='attachment'):
 
     if image is not None:
         # Detect and correct orientation using OCR
-        ocr = get_ocr_engine()
-        if ocr is not None:
-            print("Detecting document orientation...")
-            corrected, angle = ocr.correct_orientation(image)
-            if angle != 0:
-                print(f"Orientation corrected by {angle}°")
-                image = corrected
-                _last_processing_info['orientation_angle'] = angle
-                _last_processing_info['orientation_corrected'] = True
-            else:
-                print("Document orientation is correct")
+        # DISABLED: OCR orientation detection uses too much memory on Jetson
+        # TODO: Re-enable with memory optimization or lower resolution
+        # ocr = get_ocr_engine()
+        # if ocr is not None:
+        #     print("Detecting document orientation...")
+        #     corrected, angle = ocr.correct_orientation(image)
+        #     if angle != 0:
+        #         print(f"Orientation corrected by {angle}°")
+        #         image = corrected
+        #         _last_processing_info['orientation_angle'] = angle
+        #         _last_processing_info['orientation_corrected'] = True
+        #     else:
+        #         print("Document orientation is correct")
+        print("Skipping OCR orientation detection (memory optimization)")
 
         # Apply deskew to correct small rotations
         image, deskew_angle = deskew(image)
@@ -424,8 +427,12 @@ def find_latest_image():
     return None
 
 
-def read_product_codes_from_image(zone_codes, num_rows, image_width, image_height):
-    """Read product codes from a zone in the latest image."""
+def read_product_codes_from_image(zone_codes, num_rows, image_width, image_height, zone_orders=None):
+    """Read product codes from one or more zones in the latest image.
+
+    Args:
+        zone_codes: Single zone dict or array of zone dicts
+    """
     image_path = find_latest_image()
     if not image_path:
         return {'error': 'No image found', 'codes': {}}
@@ -438,53 +445,72 @@ def read_product_codes_from_image(zone_codes, num_rows, image_width, image_heigh
     scale_x = w / image_width
     scale_y = h / image_height
 
-    # Scale zone coordinates
-    codes_x = int(zone_codes['x'] * scale_x)
-    codes_y = int(zone_codes['y'] * scale_y)
-    codes_w = int(zone_codes['width'] * scale_x)
-    codes_h = int(zone_codes['height'] * scale_y)
-
-    # Extract zone
-    codes_img = img[codes_y:codes_y+codes_h, codes_x:codes_x+codes_w]
-    if codes_img.size == 0:
-        return {'error': 'Empty zone', 'codes': {}}
-
-    # Save for OCR
-    codes_img_path = f'{TEMPLATES_DIR}/debug_cells/product_codes_zone.png'
-    os.makedirs(os.path.dirname(codes_img_path), exist_ok=True)
-    cv2.imwrite(codes_img_path, codes_img)
+    # Normalize zone_codes to list
+    if isinstance(zone_codes, list):
+        zones_list = zone_codes
+    else:
+        zones_list = [zone_codes]
 
     # Run OCR
     ocr = get_ocr_engine()
     if ocr is None or ocr.reader is None:
         return {'error': 'OCR not available', 'codes': {}}
 
-    try:
-        print(f"Reading product codes from zone {codes_w}x{codes_h}...")
-        results = ocr.reader.readtext(codes_img)
+    codes = {}
+    os.makedirs(f'{TEMPLATES_DIR}/debug_cells', exist_ok=True)
 
-        codes = {}
-        row_height = codes_h / num_rows
+    # Process each codes zone
+    for zone_idx, zone in enumerate(zones_list):
+        # Scale zone coordinates
+        codes_x = int(zone['x'] * scale_x)
+        codes_y = int(zone['y'] * scale_y)
+        codes_w = int(zone['width'] * scale_x)
+        codes_h = int(zone['height'] * scale_y)
 
-        for bbox, text, conf in results:
-            y_center = (bbox[0][1] + bbox[2][1]) / 2
-            row = int(y_center / row_height)
-            if 0 <= row < num_rows:
-                # Keep digits, hyphens, parentheses
-                import re
-                clean_text = re.sub(r'[^0-9\-\(\)]', '', text.strip())
-                if clean_text and row not in codes:
-                    codes[row] = clean_text
-                    print(f"  Row {row}: '{clean_text}'")
+        # Use orders zone for row calculation reference (if provided)
+        if zone_orders:
+            orders_y = int(zone_orders['y'] * scale_y)
+            orders_h = int(zone_orders['height'] * scale_y)
+            row_height = orders_h / num_rows
+            y_offset = codes_y - orders_y  # Offset between zones
+        else:
+            row_height = codes_h / num_rows
+            y_offset = 0
 
-        print(f"Found {len(codes)} product codes")
-        return {'codes': codes}
-    except Exception as e:
-        print(f"OCR error: {e}")
-        return {'error': str(e), 'codes': {}}
+        # Extract zone
+        codes_img = img[codes_y:codes_y+codes_h, codes_x:codes_x+codes_w]
+        if codes_img.size == 0:
+            print(f"Zone {zone_idx+1}: Empty, skipping")
+            continue
+
+        # Save for OCR
+        codes_img_path = f'{TEMPLATES_DIR}/debug_cells/product_codes_zone_{zone_idx+1}.png'
+        cv2.imwrite(codes_img_path, codes_img)
+
+        try:
+            print(f"Reading product codes from zone {zone_idx+1}: {codes_w}x{codes_h}, y_offset={y_offset}...")
+            results = ocr.reader.readtext(codes_img)
+
+            for bbox, text, conf in results:
+                # Y center relative to codes zone, then adjust for offset to orders zone
+                y_center_in_zone = (bbox[0][1] + bbox[2][1]) / 2
+                y_center_in_orders = y_center_in_zone + y_offset
+                row = int(y_center_in_orders / row_height)
+                if 0 <= row < num_rows:
+                    # Keep digits, hyphens, parentheses
+                    clean_text = re.sub(r'[^0-9\-\(\)]', '', text.strip())
+                    if clean_text and row not in codes:
+                        codes[row] = clean_text
+                        print(f"  Row {row}: '{clean_text}' (zone {zone_idx+1}, y={y_center_in_zone:.0f})")
+
+        except Exception as e:
+            print(f"OCR error in zone {zone_idx+1}: {e}")
+
+    print(f"Found {len(codes)} product codes total from {len(zones_list)} zone(s)")
+    return {'codes': codes}
 
 
-def read_product_names_from_image(zone_names, num_rows, image_width, image_height):
+def read_product_names_from_image(zone_names, num_rows, image_width, image_height, zone_orders=None):
     """Read product names from a zone in the latest image."""
     image_path = find_latest_image()
     if not image_path:
@@ -504,6 +530,16 @@ def read_product_names_from_image(zone_names, num_rows, image_width, image_heigh
     names_w = int(zone_names['width'] * scale_x)
     names_h = int(zone_names['height'] * scale_y)
 
+    # Use orders zone for row calculation reference (if provided)
+    if zone_orders:
+        orders_y = int(zone_orders['y'] * scale_y)
+        orders_h = int(zone_orders['height'] * scale_y)
+        row_height = orders_h / num_rows
+        y_offset = names_y - orders_y  # Offset between zones
+    else:
+        row_height = names_h / num_rows
+        y_offset = 0
+
     # Extract zone
     names_img = img[names_y:names_y+names_h, names_x:names_x+names_w]
     if names_img.size == 0:
@@ -520,20 +556,21 @@ def read_product_names_from_image(zone_names, num_rows, image_width, image_heigh
         return {'error': 'OCR not available', 'names': {}}
 
     try:
-        print(f"Reading product names from zone {names_w}x{names_h}...")
+        print(f"Reading product names from zone {names_w}x{names_h}, y_offset={y_offset}...")
         results = ocr.reader.readtext(names_img)
 
         names = {}
-        row_height = names_h / num_rows
 
         for bbox, text, conf in results:
-            y_center = (bbox[0][1] + bbox[2][1]) / 2
-            row = int(y_center / row_height)
+            # Y center relative to names zone, then adjust for offset to orders zone
+            y_center_in_zone = (bbox[0][1] + bbox[2][1]) / 2
+            y_center_in_orders = y_center_in_zone + y_offset
+            row = int(y_center_in_orders / row_height)
             if 0 <= row < num_rows:
                 clean_text = ' '.join(text.strip().split())
                 if clean_text and row not in names:
                     names[row] = clean_text
-                    print(f"  Row {row}: '{clean_text}'")
+                    print(f"  Row {row}: '{clean_text}' (y_center={y_center_in_zone:.0f})")
 
         print(f"Found {len(names)} product names")
         return {'names': names}
@@ -646,23 +683,73 @@ def detect_order_zone(image_path=None):
                 break
 
         zone_y = monatssalat_box['y']
-
-        # Zone ends at left edge of (210-212) column
-        zone_x2 = code_210_212_box['x'] - 5
         zone_y2 = code_210_212_box['y2']
-
-        zone_width = zone_x2 - zone_x
         zone_height = zone_y2 - zone_y
 
-        # Product codes zone: RIGHT side of form (after order columns)
-        # Use the column where we found "(210-212)" anchor
+        # Find the right edge of orders zone using column width calculation
+        # Look for vertical lines after zone_x to determine column width
+        order_columns_raw = []
+        for vline_x in v_lines:
+            if vline_x > zone_x and vline_x < w * 0.95:  # Right of zone_x, but not at edge
+                order_columns_raw.append(vline_x)
+        order_columns_raw.sort()
+
+        # Remove duplicate lines (lines within 15px of each other)
+        order_columns = []
+        for x in order_columns_raw:
+            if not order_columns or x - order_columns[-1] > 15:
+                order_columns.append(x)
+
+        print(f"Found {len(order_columns)} vertical lines after zone_x={zone_x} (deduped from {len(order_columns_raw)}): {order_columns[:10]}")
+
+        # Calculate column width from zone_x to first line, then use 5 columns (Mo-Fr)
+        NUM_ORDER_COLUMNS = 5  # Mo, Di, Mi, Do, Fr (ohne Sa)
+        if len(order_columns) >= 2:
+            # Column width = distance between first two lines (Mo-Di gap, more reliable than Sa-Mo)
+            # The first column after Monatssalat is Sa, we want to skip it
+            sa_column_width = order_columns[0] - zone_x  # Width of Sa column
+            column_width = order_columns[1] - order_columns[0]  # Width of Mo column (more representative)
+            print(f"Sa column width: {sa_column_width}px, Mo column width: {column_width}px")
+
+            # Save original zone_x for names zone boundary (before Sa column)
+            names_zone_right_boundary = zone_x - 5
+
+            # Skip Sa column - shift zone_x to start of Mo
+            zone_x = order_columns[0] + 2  # Start right after the Sa-Mo boundary line
+            print(f"Skipped Sa column, new zone_x={zone_x} (after line at {order_columns[0]})")
+
+            zone_x2 = zone_x + (NUM_ORDER_COLUMNS * column_width)
+            print(f"Orders zone: x={zone_x} to x2={zone_x2} ({NUM_ORDER_COLUMNS} columns)")
+        elif len(order_columns) >= 1:
+            # Fallback: use first column width
+            column_width = order_columns[0] - zone_x
+            print(f"Calculated column width (fallback): {column_width}px")
+
+            names_zone_right_boundary = zone_x - 5
+            zone_x = zone_x + column_width
+            print(f"Skipped Sa column, new zone_x={zone_x}")
+
+            zone_x2 = zone_x + (NUM_ORDER_COLUMNS * column_width)
+            print(f"Orders zone: x={zone_x} to x2={zone_x2} ({NUM_ORDER_COLUMNS} columns)")
+        else:
+            # Fallback: estimate based on typical form width
+            names_zone_right_boundary = zone_x - 5
+            zone_x2 = zone_x + int(w * 0.45)
+            print(f"No vertical lines found, using estimated zone_x2={zone_x2}")
+
+        zone_width = zone_x2 - zone_x
+
+        # Product codes zone: ALWAYS right side of form (immediately after orders zone)
+        codes_zone_x = zone_x2 + 5
+        codes_zone_width = 80  # Fixed width for product codes column
+
         codes_zone = {
-            'x': code_210_212_box['x'] - 10,
+            'x': codes_zone_x,
             'y': zone_y,
-            'width': code_210_212_box['x2'] - code_210_212_box['x'] + 30,
+            'width': codes_zone_width,
             'height': zone_height
         }
-        print(f"Product codes zone (RIGHT): x={codes_zone['x']}, y={codes_zone['y']}, w={codes_zone['width']}, h={codes_zone['height']}")
+        print(f"Product codes zone (RIGHT of orders): x={codes_zone['x']}, y={codes_zone['y']}, w={codes_zone['width']}, h={codes_zone['height']}")
 
         # Product names zone: ONLY the column directly left of order quantities
         # Left boundary = vertical line immediately left of "Monatssalat" text
@@ -677,7 +764,7 @@ def detect_order_zone(image_path=None):
                     names_zone_x = vline_x + 2
                     print(f"Found vertical line at x={vline_x} as left boundary for names zone")
 
-        names_zone_x2 = zone_x - 5
+        names_zone_x2 = names_zone_right_boundary
 
         print(f"Product names zone: left={names_zone_x}, right={names_zone_x2} (Monatssalat at x={monatssalat_box['x']})")
 
@@ -731,6 +818,22 @@ def detect_order_zone(image_path=None):
         zone_width = int(w * 0.35)  # Estimate
         zone_height = int(h * 0.85) - zone_y
 
+        # Product codes zone: right of orders zone
+        codes_zone = {
+            'x': zone_x + zone_width + 5,
+            'y': zone_y,
+            'width': 80,
+            'height': zone_height
+        }
+
+        # Product names zone: left of orders zone
+        names_zone = {
+            'x': monatssalat_box['x'],
+            'y': zone_y,
+            'width': zone_x - monatssalat_box['x'] - 5,
+            'height': zone_height
+        }
+
         return {
             'zone': {
                 'x': zone_x,
@@ -738,6 +841,8 @@ def detect_order_zone(image_path=None):
                 'width': zone_width,
                 'height': zone_height
             },
+            'zoneCodes': codes_zone,
+            'zoneNames': names_zone,
             'numRows': 52,
             'numCols': 5,
             'imageWidth': w,
@@ -818,6 +923,371 @@ def _fallback_zone_detection(img, w, h):
             'totalHorizontalLines': len(h_lines)
         }
     }
+
+
+def scan_row_based(zone_orders, zone_names, zone_codes, image_width, image_height):
+    """
+    Row-based scanning strategy:
+    1. Find order quantities (handwritten digits) in orders zone(s)
+    2. For each found order: scan horizontally left for product name
+    3. For each found order: scan horizontally right for product code
+
+    This ensures correct row alignment based on the actual position of orders.
+    zone_orders can be a single zone dict or an array of zone dicts (Mo-Fr + Sa)
+    """
+    image_path = find_latest_image()
+    if not image_path:
+        return {'error': 'No image found'}
+
+    img = cv2.imread(image_path)
+    if img is None:
+        return {'error': 'Could not load image'}
+
+    h, w = img.shape[:2]
+    scale_x = w / image_width
+    scale_y = h / image_height
+
+    # Handle zone_orders as array (multiple zones) or single object (legacy)
+    orders_zones = []
+    if isinstance(zone_orders, list):
+        # New format: array of zones
+        for i, zo in enumerate(zone_orders):
+            # First zone (Mo-Fr) has 5 columns, second zone (Sa) has 1 column
+            num_cols = 5 if i == 0 else 1
+            col_names = ['Mo', 'Di', 'Mi', 'Do', 'Fr'] if i == 0 else ['Sa']
+            orders_zones.append({
+                'x': int(zo['x'] * scale_x),
+                'y': int(zo['y'] * scale_y),
+                'w': int(zo['width'] * scale_x),
+                'h': int(zo['height'] * scale_y),
+                'num_cols': num_cols,
+                'col_names': col_names,
+                'zone_idx': i
+            })
+    else:
+        # Legacy format: single object
+        orders_zones.append({
+            'x': int(zone_orders['x'] * scale_x),
+            'y': int(zone_orders['y'] * scale_y),
+            'w': int(zone_orders['width'] * scale_x),
+            'h': int(zone_orders['height'] * scale_y),
+            'num_cols': 5,
+            'col_names': ['Mo', 'Di', 'Mi', 'Do', 'Fr'],
+            'zone_idx': 0
+        })
+
+    # Use first orders zone for reference coordinates
+    orders_x = orders_zones[0]['x']
+    orders_y = orders_zones[0]['y']
+    orders_w = orders_zones[0]['w']
+    orders_h = orders_zones[0]['h']
+
+    names_x = int(zone_names['x'] * scale_x) if zone_names else 0
+    names_w = int(zone_names['width'] * scale_x) if zone_names else orders_x
+
+    # Handle zone_codes as array (multiple zones) or single object (legacy)
+    codes_zones = []
+    if zone_codes:
+        if isinstance(zone_codes, list):
+            # New format: array of zones
+            for zc in zone_codes:
+                codes_zones.append({
+                    'x': int(zc['x'] * scale_x),
+                    'y': int(zc['y'] * scale_y),
+                    'w': int(zc['width'] * scale_x),
+                    'h': int(zc['height'] * scale_y)
+                })
+        else:
+            # Legacy format: single object
+            codes_zones.append({
+                'x': int(zone_codes['x'] * scale_x),
+                'y': int(zone_codes['y'] * scale_y),
+                'w': int(zone_codes['width'] * scale_x),
+                'h': int(zone_codes['height'] * scale_y)
+            })
+
+    # Fallback if no codes zones defined
+    if not codes_zones:
+        codes_zones.append({
+            'x': orders_x + orders_w,
+            'y': orders_y,
+            'w': 100,
+            'h': orders_h
+        })
+
+    print(f"Row-based scan: {len(orders_zones)} orders zones")
+    for oz in orders_zones:
+        print(f"  Zone {oz['zone_idx']}: ({oz['x']},{oz['y']},{oz['w']},{oz['h']}) cols={oz['col_names']}")
+    print(f"  names_x={names_x}, names_w={names_w}")
+    print(f"  codes_zones={len(codes_zones)} zones: {codes_zones}")
+
+    # Find blobs (handwritten digits) in all orders zones
+    blobs = []
+
+    for oz in orders_zones:
+        oz_x, oz_y, oz_w, oz_h = oz['x'], oz['y'], oz['w'], oz['h']
+        num_cols = oz['num_cols']
+        col_names = oz['col_names']
+        zone_idx = oz['zone_idx']
+
+        # Extract this orders zone
+        orders_img = img[oz_y:oz_y+oz_h, oz_x:oz_x+oz_w]
+        if orders_img.size == 0:
+            continue
+
+        # Find blobs in this zone
+        gray = cv2.cvtColor(orders_img, cv2.COLOR_BGR2GRAY)
+        _, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
+        # Remove grid lines using morphological operations
+        # Detect horizontal lines
+        horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (40, 1))
+        horizontal_lines = cv2.morphologyEx(binary, cv2.MORPH_OPEN, horizontal_kernel, iterations=2)
+
+        # Detect vertical lines
+        vertical_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 40))
+        vertical_lines = cv2.morphologyEx(binary, cv2.MORPH_OPEN, vertical_kernel, iterations=2)
+
+        # Combine and dilate lines slightly to ensure complete removal
+        grid_lines = cv2.add(horizontal_lines, vertical_lines)
+        grid_lines = cv2.dilate(grid_lines, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=1)
+
+        # Remove grid lines from binary image
+        binary = cv2.subtract(binary, grid_lines)
+
+        # Morphological operations to clean up remaining noise
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+        binary = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
+
+        # Debug: save binary image
+        debug_path = f'/app/templates/debug_zone_{zone_idx}_binary.png'
+        cv2.imwrite(debug_path, binary)
+        print(f"  Debug: Saved binary image to {debug_path}")
+
+        # Find contours (blobs)
+        contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        print(f"  Zone {zone_idx}: Found {len(contours)} raw contours")
+
+        cell_w = oz_w / num_cols
+
+        filtered_count = {'too_small': 0, 'too_large': 0, 'low_area': 0, 'passed': 0}
+        for cnt in contours:
+            x, y, bw, bh = cv2.boundingRect(cnt)
+            area = cv2.contourArea(cnt)
+
+            # Filter: reasonable size for a digit
+            if bw < 8 or bh < 10:
+                filtered_count['too_small'] += 1
+                continue
+            if bw > 80 or bh > 80:
+                filtered_count['too_large'] += 1
+                continue
+            if area < 50:
+                filtered_count['low_area'] += 1
+                continue
+            filtered_count['passed'] += 1
+
+            # Calculate column from x position
+            col = int(x / cell_w)
+            if col >= num_cols:
+                col = num_cols - 1
+
+            # Y center in image coordinates
+            y_center_in_zone = y + bh / 2
+            y_center_abs = oz_y + y_center_in_zone
+
+            # Extract blob image for EMNIST
+            padding = 4
+            bx1 = max(0, x - padding)
+            by1 = max(0, y - padding)
+            bx2 = min(oz_w, x + bw + padding)
+            by2 = min(oz_h, y + bh + padding)
+
+            blob_img = orders_img[by1:by2, bx1:bx2]
+
+            blobs.append({
+                'x': x,
+                'y': y,
+                'w': bw,
+                'h': bh,
+                'col': col,
+                'column': col_names[col],
+                'y_center_abs': y_center_abs,
+                'blob_img': blob_img,
+                'zone_idx': zone_idx,
+                'zone_x': oz_x,
+                'zone_y': oz_y
+            })
+
+        print(f"  Zone {zone_idx} filter stats: {filtered_count}")
+
+    print(f"Found {len(blobs)} blobs in {len(orders_zones)} orders zone(s)")
+
+    # Helper function to find matching codes zone for a Y position
+    def find_codes_zone_for_y(y_pos):
+        """Find the codes zone that covers the given Y position."""
+        for cz in codes_zones:
+            if cz['y'] <= y_pos <= cz['y'] + cz['h']:
+                return cz
+        # Fallback: return first zone
+        return codes_zones[0] if codes_zones else None
+
+    # Phase 1: Extract all strips for OCR (before using EMNIST/TensorFlow)
+    row_height = 53  # Approximate row height
+    blob_data = []
+
+    for blob in blobs:
+        y_center = blob['y_center_abs']
+
+        # Calculate row strip boundaries (centered on blob)
+        strip_y1 = int(y_center - row_height / 2)
+        strip_y2 = int(y_center + row_height / 2)
+        strip_y1 = max(0, strip_y1)
+        strip_y2 = min(h, strip_y2)
+
+        # Extract horizontal strip for product name (left)
+        name_strip = img[strip_y1:strip_y2, names_x:names_x+names_w]
+
+        # Find matching codes zone for this Y position and extract code strip
+        codes_zone = find_codes_zone_for_y(y_center)
+        if codes_zone:
+            code_strip = img[strip_y1:strip_y2, codes_zone['x']:codes_zone['x']+codes_zone['w']]
+        else:
+            code_strip = np.zeros((strip_y2-strip_y1, 100, 3), dtype=np.uint8)
+
+        # Save strips for OCR
+        strip_id = f"{int(blob['y_center_abs'])}_{blob['col']}"
+        name_path = f'/app/templates/debug_cells/name_strip_{strip_id}.png'
+        code_path = f'/app/templates/debug_cells/code_strip_{strip_id}.png'
+
+        cv2.imwrite(name_path, name_strip)
+        cv2.imwrite(code_path, code_strip)
+
+        # Save blob image for EMNIST
+        blob_path = f'/app/templates/debug_cells/blob_{strip_id}.png'
+        cv2.imwrite(blob_path, blob['blob_img'])
+
+        blob_data.append({
+            'blob': blob,
+            'blob_path': blob_path,
+            'name_strip_path': name_path,
+            'code_strip_path': code_path,
+            'y_center': int(y_center)
+        })
+
+    # Phase 2: Run OCR FIRST (before TensorFlow/EMNIST claims GPU)
+    print(f"Running OCR on {len(blob_data)} strip pairs...")
+    ocr_results = _run_ocr_batch([
+        {'path': b['name_strip_path'], 'type': 'name', 'y': b['y_center']} for b in blob_data
+    ] + [
+        {'path': b['code_strip_path'], 'type': 'code', 'y': b['y_center']} for b in blob_data
+    ])
+
+    # Phase 3: Now run EMNIST recognition (TensorFlow will claim GPU)
+    print("Running EMNIST digit recognition...")
+    results = []
+
+    for bd in blob_data:
+        blob = bd['blob']
+        y_center = bd['y_center']
+
+        # EMNIST recognition
+        digit, confidence = recognize_digit_emnist(blob['blob_img'])
+
+        if digit is None or confidence < 0.4:
+            continue
+
+        results.append({
+            'digit': digit,
+            'confidence': round(confidence, 3),
+            'column': blob['column'],
+            'y_center': y_center,
+            'x': int((blob['zone_x'] + blob['x']) / scale_x),
+            'y': int((blob['zone_y'] + blob['y']) / scale_y),
+            'width': int(blob['w'] / scale_x),
+            'height': int(blob['h'] / scale_y),
+            'product_name': ocr_results.get(f"{y_center}_name", ''),
+            'product_code': ocr_results.get(f"{y_center}_code", '')
+        })
+
+    return {'results': results}
+
+
+def _run_ocr_batch(strips_to_ocr):
+    """Run OCR on all strips in a single subprocess. Must be called BEFORE TensorFlow loads."""
+    if not strips_to_ocr:
+        return {}
+
+    # Run batch OCR in subprocess
+    ocr_script = '''
+import sys
+import os
+import json
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+try:
+    import easyocr
+    import re
+    reader = easyocr.Reader(["de"], gpu=True, verbose=False)
+
+    strips = ''' + json.dumps(strips_to_ocr) + '''
+    results = {}
+
+    for strip in strips:
+        path = strip['path']
+        strip_type = strip['type']
+        y = strip['y']
+        key = f"{y}_{strip_type}"
+
+        if not os.path.exists(path):
+            results[key] = ''
+            continue
+
+        ocr_results = reader.readtext(path)
+        if not ocr_results:
+            results[key] = ''
+            continue
+
+        texts = [r[1] for r in ocr_results]
+        full_text = ' '.join(texts).strip()
+
+        if strip_type == 'code':
+            # Extract only digits and hyphens for product codes
+            clean = re.sub(r'[^0-9\\-()]', '', full_text)
+            results[key] = clean
+        else:
+            # Product name - keep text, remove leading numbers
+            clean = re.sub(r'^[0-9\\-]+\\s*', '', full_text)
+            results[key] = clean
+
+    print("OCR_RESULT:" + json.dumps(results))
+except Exception as e:
+    print("OCR_ERROR:" + str(e), file=sys.stderr)
+    import traceback
+    traceback.print_exc()
+'''
+
+    try:
+        result = subprocess.run(
+            ['python3', '-c', ocr_script],
+            capture_output=True, text=True, timeout=180
+        )
+
+        # Parse OCR results
+        ocr_data = {}
+        for line in result.stdout.strip().split('\n'):
+            if line.startswith('OCR_RESULT:'):
+                ocr_data = json.loads(line[11:])
+                break
+
+        if result.stderr:
+            print(f"OCR stderr: {result.stderr[:500]}")
+
+        print(f"OCR completed: {len(ocr_data)} strips processed")
+        return ocr_data
+
+    except Exception as e:
+        print(f"Batch OCR error: {e}")
+        return {}
 
 
 def scan_zone_in_docker(zone, num_rows, num_cols, image_width, image_height, fixed_column='', zone_codes=None, zone_names=None):
@@ -1451,26 +1921,6 @@ class ScannerHandler(http.server.SimpleHTTPRequestHandler):
             self.send_json({'stats': stats})
             return
 
-        # API: Get GPU status
-        if path == '/api/gpu-status':
-            gpu_available = False
-            gpu_name = None
-            try:
-                import tensorflow as tf
-                gpus = tf.config.experimental.list_physical_devices('GPU')
-                if gpus:
-                    gpu_available = True
-                    gpu_name = gpus[0].name if gpus else None
-            except Exception as e:
-                print(f"GPU check error: {e}")
-
-            self.send_json({
-                'gpu_available': gpu_available,
-                'gpu_name': gpu_name,
-                'gpu_count': len(gpus) if gpu_available else 0
-            })
-            return
-
         # Serve static files
         return super().do_GET()
 
@@ -1538,7 +1988,24 @@ class ScannerHandler(http.server.SimpleHTTPRequestHandler):
             self.send_json(result)
             return
 
-        # API: Scan zone
+        # API: Row-based scanning (new strategy)
+        if path == '/api/scan-row-based':
+            zone_orders = data.get('zone')
+            zone_names = data.get('zoneNames')
+            zone_codes = data.get('zoneCodes')
+            image_width = data.get('imageWidth', 2480)
+            image_height = data.get('imageHeight', 3508)
+
+            if not zone_orders:
+                self.send_json({'error': 'No zone specified'})
+                return
+
+            print(f"Row-based scan request: orders={zone_orders}")
+            result = scan_row_based(zone_orders, zone_names, zone_codes, image_width, image_height)
+            self.send_json(result)
+            return
+
+        # API: Scan zone (legacy)
         if path == '/api/scan-zone':
             zone = data.get('zone')
             zone_names = data.get('zoneNames')  # Optional: Produktnamen-Zone
@@ -1563,6 +2030,7 @@ class ScannerHandler(http.server.SimpleHTTPRequestHandler):
         # API: Read product codes from zone
         if path == '/api/read-product-codes':
             zone_codes = data.get('zoneCodes')
+            zone_orders = data.get('zoneOrders')  # Reference zone for row alignment
             num_rows = data.get('numRows', 52)
             image_width = data.get('imageWidth', 2350)
             image_height = data.get('imageHeight', 3346)
@@ -1571,13 +2039,14 @@ class ScannerHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_json({'error': 'No zoneCodes specified'})
                 return
 
-            result = read_product_codes_from_image(zone_codes, num_rows, image_width, image_height)
+            result = read_product_codes_from_image(zone_codes, num_rows, image_width, image_height, zone_orders)
             self.send_json(result)
             return
 
         # API: Read product names from zone
         if path == '/api/read-product-names':
             zone_names = data.get('zoneNames')
+            zone_orders = data.get('zoneOrders')  # Reference zone for row alignment
             num_rows = data.get('numRows', 52)
             image_width = data.get('imageWidth', 2350)
             image_height = data.get('imageHeight', 3346)
@@ -1586,7 +2055,7 @@ class ScannerHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_json({'error': 'No zoneNames specified'})
                 return
 
-            result = read_product_names_from_image(zone_names, num_rows, image_width, image_height)
+            result = read_product_names_from_image(zone_names, num_rows, image_width, image_height, zone_orders)
             self.send_json(result)
             return
 
