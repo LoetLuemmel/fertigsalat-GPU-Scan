@@ -524,6 +524,72 @@
         let editSelectionRect = null;  // Rectangle for delete/add selection
         let results = [];
         let currentReviewIndex = -1;
+
+        // Static product lookup table (quasi-static form layout)
+        // Row index (0-based) -> { name, code }
+        const PRODUCT_TABLE = {
+            0:  { name: 'Monatssalat', code: '200' },
+            1:  { name: 'Jahreszeitensalat', code: '201' },
+            2:  { name: 'Saisonsalat', code: '202' },
+            3:  { name: 'Salade Méditerranée', code: '203' },
+            4:  { name: 'Märitsalat', code: '204' },
+            5:  { name: 'Cleopatra-Salat', code: '205' },
+            6:  { name: 'Salade Taboulé', code: '206' },
+            7:  { name: 'Nüsslisalat mit Speck und Ei', code: '207' },
+            8:  { name: 'Nüsslisalat mit Ei', code: '208' },
+            9:  { name: 'Salade Caprese', code: '209' },
+            10: { name: 'Power-Salat', code: '210' },
+            11: { name: 'Bärner Quinoa-Linsensalat', code: '211' },
+            12: { name: 'Griechischer Salat', code: '212' },
+            13: { name: 'Grüner Salat mit Rüebli & Kernen', code: '213' },
+            14: { name: 'Grüner Salat mit Hüttenkäse', code: '214' },
+            15: { name: 'Grüner Salat gemischt (gross)', code: '215' },
+            16: { name: 'Grüner Salat mit Poulet & Peperoni', code: '216' },
+            17: { name: 'Grüner Salat "Chly"', code: '217' },
+            18: { name: 'Grüner Salat mit Rüebli & Kernen (klein)', code: '218' },
+            19: { name: 'Grüner Salat mit Gurken und Ei', code: '219' },
+            20: { name: 'Grüner Salat mit Tomaten, Ei und Käse', code: '220' },
+            21: { name: 'Grüner Salat gemischt (klein)', code: '221' },
+            22: { name: 'Randensalat mit Hüttenkäse', code: '222' },
+            23: { name: 'Bohnen-Feta Salat', code: '223' },
+            24: { name: 'Sandwiches (Kategorie)', code: '' },
+            25: { name: 'Sandwich Crustino mit Schinken', code: '230' },
+            26: { name: 'Weggli mit Schinken', code: '231' },
+            27: { name: 'Sandwich Crustino mit Käse', code: '232' },
+            28: { name: 'Weggli mit Käse', code: '233' },
+            29: { name: 'Zopf mit Schinken-Käse', code: '234' },
+            30: { name: 'Ruchbrot mit Schinken-Käse', code: '235' },
+            31: { name: 'Ruchbrot mit Salami', code: '236' },
+            32: { name: 'Laugensandwich mit Kräuterfrischkäse', code: '237' },
+            33: { name: 'Laugensilserli mit Kräuterfrischkäse', code: '238' },
+            34: { name: 'Laugensilserli mit Thon', code: '239' },
+            35: { name: 'Ciabatta mit Thon', code: '240' },
+            36: { name: 'Ciabatta mit Roastbeef', code: '241' },
+            37: { name: 'Schraubenbrot mit Schnitzel', code: '242' },
+            38: { name: 'Maggia-Parisettli Caprese', code: '243' },
+            39: { name: 'Maggia-Parisettli mit Brie', code: '244' },
+            40: { name: 'Maggia-Parisettli mit Trockenfleisch', code: '245' },
+            41: { name: 'Weitere Produkte (Kategorie)', code: '' },
+            42: { name: 'Birchermüesli mit Waldbeeren klein', code: '250' },
+            43: { name: 'Birchermüesli mit Waldbeeren gross', code: '251' },
+            44: { name: 'Wrap mit Bärner Quinoa & Roastbeef', code: '252' },
+            45: { name: 'Wrap Taboulé', code: '253' },
+            46: { name: 'Suppen (Kategorie)', code: '' },
+            47: { name: 'Rassige Tomatensuppe', code: '260' },
+            48: { name: 'Rüebli-Zucchettisuppe', code: '261' },
+            49: { name: 'Lauch-Specksuppe', code: '262' },
+            50: { name: 'Saisonsuppe', code: '263' },
+            51: { name: 'Reservezeile', code: '' }
+        };
+
+        // Helper function to get product info by row
+        function getProductInfo(rowIndex) {
+            const product = PRODUCT_TABLE[rowIndex];
+            if (product) {
+                return { name: product.name, code: product.code };
+            }
+            return { name: `Zeile ${rowIndex + 1}`, code: '' };
+        }
         let highlightedResultIndex = -1;
         let highlightPulse = 0;  // For pulsing animation
         let highlightAnimationId = null;
@@ -1357,14 +1423,12 @@
             const COLUMNS = ['Mo', 'Di', 'Mi', 'Do', 'Fr'];
             const columnName = col < COLUMNS.length ? COLUMNS[col] : `Col${col + 1}`;
 
-            // Find product info for this row (from existing results or empty)
-            let productName = '';
-            let productCode = '';
-            const existingInRow = results.find(r => r.row === row + 1);
-            if (existingInRow) {
-                productName = existingInRow.product_name || '';
-                productCode = existingInRow.product_code || '';
-            }
+            // Get product info from static lookup table
+            const productInfo = getProductInfo(row);
+            const productName = productInfo.name;
+            const productCode = productInfo.code;
+
+            console.log(`Adding object at row ${row}: name='${productName}', code='${productCode}'`);
 
             // Create new result entry
             const newResult = {
@@ -1429,12 +1493,17 @@
 
             document.getElementById('scanBtn').disabled = true;
 
+            // Show GPU as active during scan
+            if (gpuAvailable) {
+                setGpuStatus('active');
+            }
+
             const numRows = parseInt(document.getElementById('numRows').value) || 59;
             const numCols = parseInt(document.getElementById('numCols').value) || 6;
 
             try {
-                // Step 1: Scan blobs (order quantities)
-                setStatus('Schritt 1/3: Erkenne Bestellmengen...', true);
+                // Scan blobs (order quantities)
+                setStatus('Erkenne Bestellmengen...', true);
 
                 const response = await fetch('/api/scan-zone', {
                     method: 'POST',
@@ -1453,74 +1522,27 @@
                 if (data.error) {
                     setStatus('Fehler: ' + data.error);
                     document.getElementById('scanBtn').disabled = false;
+                    if (gpuAvailable) setGpuStatus('ready');
                     return;
                 }
 
                 results = data.results || [];
+
+                // Assign product names and codes from static lookup table
+                results.forEach(r => {
+                    const rowIndex = r.row - 1;  // Convert to 0-based
+                    const productInfo = getProductInfo(rowIndex);
+                    r.product_name = productInfo.name;
+                    r.product_code = productInfo.code;
+                });
+
                 updateResults();
-                redraw();
-                setStatus(`${results.length} Bestellmengen gefunden. Schritt 2/3: Lese Produktnummern...`, true);
-
-                // Step 2: Read product codes (if zone defined)
-                if (zones.codes) {
-                    const codesResponse = await fetch('/api/read-product-codes', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            zoneCodes: zones.codes,
-                            numRows: numRows,
-                            imageWidth: canvas.width,
-                            imageHeight: canvas.height
-                        })
-                    });
-
-                    const codesData = await codesResponse.json();
-                    if (codesData.codes) {
-                        // Update results with product codes
-                        results.forEach(r => {
-                            const rowIndex = r.row - 1;  // Convert to 0-based
-                            if (codesData.codes[rowIndex]) {
-                                r.product_code = codesData.codes[rowIndex];
-                            }
-                        });
-                        updateResults();
-                        setStatus(`Produktnummern geladen. Schritt 3/3: Lese Produktnamen...`, true);
-                    }
-                } else {
-                    setStatus(`Schritt 3/3: Lese Produktnamen...`, true);
-                }
-
-                // Step 3: Read product names (if zone defined)
-                if (zones.names) {
-                    const namesResponse = await fetch('/api/read-product-names', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            zoneNames: zones.names,
-                            numRows: numRows,
-                            imageWidth: canvas.width,
-                            imageHeight: canvas.height
-                        })
-                    });
-
-                    const namesData = await namesResponse.json();
-                    if (namesData.names) {
-                        // Update results with product names
-                        results.forEach(r => {
-                            const rowIndex = r.row - 1;  // Convert to 0-based
-                            if (namesData.names[rowIndex]) {
-                                r.product_name = namesData.names[rowIndex];
-                            }
-                        });
-                        updateResults();
-                    }
-                }
-
                 updateStats();
                 redraw();
 
                 document.getElementById('scanBtn').disabled = false;
                 document.getElementById('reviewBtn').disabled = results.length === 0;
+                if (gpuAvailable) setGpuStatus('ready');
 
                 const pending = results.filter(r => !r.reviewed && r.confidence < 0.7).length;
                 setStatus(`Scan abgeschlossen: ${results.length} Einträge, ${pending} zur Überprüfung.`);
@@ -1532,6 +1554,7 @@
             } catch (err) {
                 setStatus('Fehler: ' + err.message);
                 document.getElementById('scanBtn').disabled = false;
+                if (gpuAvailable) setGpuStatus('ready');
             }
         }
 
@@ -1806,31 +1829,52 @@
         // Load training stats on page load
         loadTrainingStats();
 
+        // GPU status tracking
+        let gpuAvailable = false;
+
         // Check GPU status
         async function checkGpuStatus() {
             try {
                 const response = await fetch('/api/gpu-status');
                 const data = await response.json();
+                gpuAvailable = data.gpu_available;
+                setGpuStatus(gpuAvailable ? 'ready' : 'cpu');
+            } catch (err) {
+                gpuAvailable = false;
+                setGpuStatus('error');
+            }
+        }
 
-                const indicator = document.getElementById('gpuIndicator');
-                const label = document.getElementById('gpuLabel');
+        // Set GPU status indicator: 'active' (green), 'ready' (yellow), 'cpu' (orange), 'error' (red)
+        function setGpuStatus(status) {
+            const indicator = document.getElementById('gpuIndicator');
+            const label = document.getElementById('gpuLabel');
 
-                if (data.gpu_available) {
+            switch (status) {
+                case 'active':
                     indicator.style.background = '#00ff00';
                     indicator.style.boxShadow = '0 0 8px #00ff00';
                     label.textContent = 'GPU aktiv';
                     label.style.color = '#00ff00';
-                } else {
+                    break;
+                case 'ready':
+                    indicator.style.background = '#ffcc00';
+                    indicator.style.boxShadow = '0 0 5px #ffcc00';
+                    label.textContent = 'GPU bereit';
+                    label.style.color = '#ffcc00';
+                    break;
+                case 'cpu':
                     indicator.style.background = '#ff6600';
+                    indicator.style.boxShadow = 'none';
                     label.textContent = 'CPU Modus';
                     label.style.color = '#ff6600';
-                }
-            } catch (err) {
-                const indicator = document.getElementById('gpuIndicator');
-                const label = document.getElementById('gpuLabel');
-                indicator.style.background = '#ff0000';
-                label.textContent = 'GPU: Fehler';
-                label.style.color = '#ff0000';
+                    break;
+                case 'error':
+                    indicator.style.background = '#ff0000';
+                    indicator.style.boxShadow = 'none';
+                    label.textContent = 'GPU: Fehler';
+                    label.style.color = '#ff0000';
+                    break;
             }
         }
 
