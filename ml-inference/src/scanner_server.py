@@ -925,6 +925,19 @@ def _fallback_zone_detection(img, w, h):
     }
 
 
+def clean_product_name(name):
+    """Clean up product name by removing OCR artifacts from form edges."""
+    if not name:
+        return name
+    # Remove leading "[" (form edge artifact) and any space after it
+    if name.startswith('['):
+        name = name[1:].lstrip()
+    # Remove leading "]" as well
+    if name.startswith(']'):
+        name = name[1:].lstrip()
+    return name
+
+
 def scan_row_based(zone_orders, zone_names, zone_codes, image_width, image_height):
     """
     Row-based scanning strategy:
@@ -1206,7 +1219,7 @@ def scan_row_based(zone_orders, zone_names, zone_codes, image_width, image_heigh
             'y': int((blob['zone_y'] + blob['y']) / scale_y),
             'width': int(blob['w'] / scale_x),
             'height': int(blob['h'] / scale_y),
-            'product_name': ocr_results.get(f"{y_center}_name", ''),
+            'product_name': clean_product_name(ocr_results.get(f"{y_center}_name", '')),
             'product_code': ocr_results.get(f"{y_center}_code", '')
         })
 
