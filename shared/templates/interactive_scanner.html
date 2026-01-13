@@ -1027,12 +1027,68 @@
             redraw();
         }
 
-        function suggestZone() {
-            // Don't auto-suggest - let user draw all three zones manually
-            setStatus('Bild geladen. Wählen Sie eine Zone und zeichnen Sie sie im Bild.');
-            setActiveZone('orders');
-            document.getElementById('zonePanel').style.display = 'block';
-            updateZoneInfo();
+        // Save zones to server
+        async function saveZonesToServer() {
+            try {
+                const response = await fetch('/api/zones', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ zones: zones })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    console.log('Zones saved to server');
+                } else {
+                    console.error('Failed to save zones:', result.error);
+                }
+            } catch (e) {
+                console.error('Error saving zones:', e);
+            }
+        }
+
+        // Load zones from server
+        async function loadZonesFromServer() {
+            try {
+                const response = await fetch('/api/zones');
+                const result = await response.json();
+                if (result.saved && result.zones) {
+                    zones = result.zones;
+                    // Ensure arrays are arrays (in case of old format)
+                    if (!Array.isArray(zones.orders)) zones.orders = zones.orders ? [zones.orders] : [];
+                    if (!Array.isArray(zones.codes)) zones.codes = zones.codes ? [zones.codes] : [];
+                    updateOrdersButtonText();
+                    updateCodesButtonText();
+                    updateZoneInfo();
+                    checkScanReady();
+                    redraw();
+                    console.log('Zones loaded from server');
+                    return true;
+                }
+            } catch (e) {
+                console.error('Error loading zones:', e);
+            }
+            return false;
+        }
+
+        async function suggestZone() {
+            // Try to load saved zones from server
+            const loaded = await loadZonesFromServer();
+            if (loaded) {
+                setStatus('Gespeicherte Zonen wiederhergestellt. Klicken Sie "Zonen scannen" oder passen Sie die Zonen an.');
+                setActiveZone('orders');
+                document.getElementById('zonePanel').style.display = 'block';
+                // If zones are complete, enable scan
+                if (zones.orders.length > 0 && zones.names && zones.codes.length > 0) {
+                    setGuideStep('scan');
+                } else {
+                    setGuideStep('detect');
+                }
+            } else {
+                setStatus('Bild geladen. Wählen Sie eine Zone und zeichnen Sie sie im Bild.');
+                setActiveZone('orders');
+                document.getElementById('zonePanel').style.display = 'block';
+                updateZoneInfo();
+            }
         }
 
         // Helper: Get canvas coordinates from mouse event
@@ -1287,6 +1343,7 @@
                 canvas.style.cursor = 'crosshair';
                 updateZoneInfo();
                 redraw();
+                saveZonesToServer();  // Auto-save zones
                 return;
             }
 
@@ -1308,6 +1365,7 @@
                     updateOrdersButtonText();
                     checkScanReady();
                     setStatus(`Bestellmengen-Zone ${zones.orders.length}/${MAX_ORDER_ZONES} hinzugefügt.`);
+                    saveZonesToServer();  // Auto-save zones
                 } else {
                     setStatus(`Maximum ${MAX_ORDER_ZONES} Bestellmengen-Zonen erreicht. Shift+Klick zum Löschen.`);
                 }
@@ -1320,6 +1378,7 @@
                     updateCodesButtonText();
                     checkScanReady();
                     setStatus(`Produktnummern-Zone ${zones.codes.length}/${MAX_CODE_ZONES} hinzugefügt.`);
+                    saveZonesToServer();  // Auto-save zones
                 } else {
                     setStatus(`Maximum ${MAX_CODE_ZONES} Produktnummern-Zonen erreicht. Shift+Klick zum Löschen.`);
                 }
@@ -1328,6 +1387,7 @@
                 updateZoneInfo();
                 checkScanReady();
                 setStatus(`Zone "${ZONE_COLORS.names.name}" definiert.`);
+                saveZonesToServer();  // Auto-save zones
             }
             isDrawing = false;
             currentDrawingRect = null;
@@ -1475,6 +1535,7 @@
                 checkScanReady();
                 redraw();
                 setStatus(`Letzte Bestellmengen-Zone gelöscht. (${zones.orders.length}/${MAX_ORDER_ZONES})`);
+                saveZonesToServer();  // Auto-save zones
             } else {
                 // Normal click: activate orders zone for drawing
                 setActiveZone('orders');
@@ -1496,6 +1557,7 @@
                 updateZoneInfo();
                 redraw();
                 setStatus(`Letzte Produktnummern-Zone gelöscht. (${zones.codes.length}/${MAX_CODE_ZONES})`);
+                saveZonesToServer();  // Auto-save zones
             } else {
                 // Normal click: activate codes zone for drawing
                 setActiveZone('codes');
@@ -1603,6 +1665,7 @@
                     updateZoneInfo();
                     checkScanReady();
                     redraw();
+                    saveZonesToServer();  // Auto-save detected zones
 
                     const debugInfo = data.debug || {};
                     const codesInfo = data.zoneCodes ? ' + Produktnummern' : '';
@@ -1925,7 +1988,7 @@
             setStatus(`Neues Objekt in Zeile ${row + 1}, ${columnName} hinzugefügt. Bitte Menge eingeben.`);
         }
 
-        // Keyboard handler for Backspace (delete) and Escape (cancel)
+        // Keyboard handler for Backspace (delete), Escape (cancel), Tab navigation
         document.addEventListener('keydown', function(e) {
             // Escape: cancel selection
             if (e.key === 'Escape' && editMode && editSelectionRect) {
@@ -1942,6 +2005,45 @@
                 if (document.activeElement.tagName === 'INPUT') return;
                 e.preventDefault();
                 deleteObjectsInSelection();
+                return;
+            }
+
+            // Tab / Shift+Tab: navigate between results
+            if (e.key === 'Tab' && results.length > 0) {
+                e.preventDefault();
+
+                // Get sorted results for navigation (same order as displayed)
+                const dayOrder = {'Mo': 0, 'Di': 1, 'Mi': 2, 'Do': 3, 'Fr': 4, 'Sa': 5, 'So': 6};
+                const sortedIndices = results
+                    .map((r, i) => ({index: i, y: r.y_center ?? r.y ?? 0, day: dayOrder[r.column] ?? 99}))
+                    .sort((a, b) => {
+                        if (Math.abs(a.y - b.y) > 20) return a.y - b.y;
+                        return a.day - b.day;
+                    })
+                    .map(r => r.index);
+
+                // Find current position in sorted order
+                let currentPos = sortedIndices.indexOf(currentReviewIndex);
+                if (currentPos === -1) currentPos = -1;
+
+                // Calculate next position
+                let nextPos;
+                if (e.shiftKey) {
+                    // Shift+Tab: go backwards
+                    nextPos = currentPos <= 0 ? sortedIndices.length - 1 : currentPos - 1;
+                } else {
+                    // Tab: go forwards
+                    nextPos = currentPos >= sortedIndices.length - 1 ? 0 : currentPos + 1;
+                }
+
+                const nextIndex = sortedIndices[nextPos];
+                selectResultRow(nextIndex);
+
+                // Scroll the result row into view
+                const row = document.querySelector(`#resultsBody tr[data-index="${nextIndex}"]`);
+                if (row) {
+                    row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
             }
         });
 
@@ -2018,12 +2120,16 @@
                 return;
             }
 
-            // Sort by row number, then by day (Mo, Di, Mi, Do, Fr)
+            // Sort by y position (top to bottom), then by day (Mo, Di, Mi, Do, Fr)
             const dayOrder = {'Mo': 0, 'Di': 1, 'Mi': 2, 'Do': 3, 'Fr': 4, 'Sa': 5, 'So': 6};
             const sortedResults = results
                 .map((r, i) => ({...r, originalIndex: i}))
                 .sort((a, b) => {
-                    if (a.row !== b.row) return a.row - b.row;
+                    // Sort by y_center (top to bottom), fallback to row if y_center not available
+                    const yA = a.y_center ?? a.y ?? a.row ?? 0;
+                    const yB = b.y_center ?? b.y ?? b.row ?? 0;
+                    if (Math.abs(yA - yB) > 20) return yA - yB;  // Different rows
+                    // Same row - sort by day
                     const dayA = dayOrder[a.column] ?? 99;
                     const dayB = dayOrder[b.column] ?? 99;
                     return dayA - dayB;

@@ -25,6 +25,7 @@ PORT = 8080
 TEMPLATES_DIR = '/app/templates'
 INTERMEDIATE_DIR = '/app/intermediate'
 TRAINING_DIR = '/app/training_data'
+SAVED_ZONES_FILE = '/app/templates/saved_zones.json'
 
 # Ensure directories exist
 os.makedirs(TRAINING_DIR, exist_ok=True)
@@ -1934,6 +1935,20 @@ class ScannerHandler(http.server.SimpleHTTPRequestHandler):
             self.send_json({'stats': stats})
             return
 
+        # API: Load saved zones
+        if path == '/api/zones':
+            if os.path.exists(SAVED_ZONES_FILE):
+                try:
+                    with open(SAVED_ZONES_FILE, 'r') as f:
+                        zones = json.load(f)
+                    self.send_json({'zones': zones, 'saved': True})
+                except Exception as e:
+                    print(f"Error loading saved zones: {e}")
+                    self.send_json({'zones': None, 'saved': False})
+            else:
+                self.send_json({'zones': None, 'saved': False})
+            return
+
         # Serve static files
         return super().do_GET()
 
@@ -1999,6 +2014,22 @@ class ScannerHandler(http.server.SimpleHTTPRequestHandler):
         if path == '/api/detect-zones':
             result = detect_order_zone()
             self.send_json(result)
+            return
+
+        # API: Save zones
+        if path == '/api/zones':
+            zones = data.get('zones')
+            if zones:
+                try:
+                    with open(SAVED_ZONES_FILE, 'w') as f:
+                        json.dump(zones, f, indent=2)
+                    print(f"Zones saved to {SAVED_ZONES_FILE}")
+                    self.send_json({'success': True, 'message': 'Zones saved'})
+                except Exception as e:
+                    print(f"Error saving zones: {e}")
+                    self.send_json({'success': False, 'error': str(e)})
+            else:
+                self.send_json({'success': False, 'error': 'No zones provided'})
             return
 
         # API: Row-based scanning (new strategy)
