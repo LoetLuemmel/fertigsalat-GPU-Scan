@@ -740,9 +740,26 @@ def detect_order_zone(image_path=None):
 
         zone_width = zone_x2 - zone_x
 
-        # Product codes zone: ALWAYS right side of form (immediately after orders zone)
-        codes_zone_x = zone_x2 + 5
-        codes_zone_width = 80  # Fixed width for product codes column
+        # Product codes zone: LEFT side of form (first column with product numbers)
+        # Find leftmost vertical line as the left edge of the codes zone
+        codes_zone_x = 50  # Default: near left edge
+        codes_zone_width = 120  # Width for product codes column
+
+        # Find the first two vertical lines to determine codes zone boundaries
+        left_lines_raw = [x for x in v_lines if x < monatssalat_box['x'] - 50]
+        # Deduplicate lines that are too close together (within 15px)
+        left_lines = []
+        for x in left_lines_raw:
+            if not left_lines or x - left_lines[-1] > 15:
+                left_lines.append(x)
+
+        if len(left_lines) >= 2:
+            codes_zone_x = left_lines[0] + 2
+            codes_zone_width = max(80, left_lines[1] - left_lines[0] - 4)  # Minimum 80px width
+            print(f"Found codes zone boundaries: left={left_lines[0]}, right={left_lines[1]}")
+        elif len(left_lines) >= 1:
+            codes_zone_x = left_lines[0] + 2
+            print(f"Found codes zone left boundary: {left_lines[0]}")
 
         codes_zone = {
             'x': codes_zone_x,
@@ -750,22 +767,17 @@ def detect_order_zone(image_path=None):
             'width': codes_zone_width,
             'height': zone_height
         }
-        print(f"Product codes zone (RIGHT of orders): x={codes_zone['x']}, y={codes_zone['y']}, w={codes_zone['width']}, h={codes_zone['height']}")
+        print(f"Product codes zone (LEFT): x={codes_zone['x']}, y={codes_zone['y']}, w={codes_zone['width']}, h={codes_zone['height']}")
 
-        # Product names zone: ONLY the column directly left of order quantities
-        # Left boundary = vertical line immediately left of "Monatssalat" text
-        # Right boundary = start of orders zone (zone_x)
-
-        # Find the vertical line closest to (but before) the Monatssalat text
-        names_zone_x = monatssalat_box['x']  # Default: text position
-        for vline_x in v_lines:
-            if vline_x < monatssalat_box['x'] - 5 and vline_x > monatssalat_box['x'] - 100:
-                # Keep the line closest to Monatssalat (rightmost line before text)
-                if vline_x > names_zone_x - 100:  # Only update if closer
-                    names_zone_x = vline_x + 2
-                    print(f"Found vertical line at x={vline_x} as left boundary for names zone")
-
+        # Product names zone: between codes zone and orders zone
+        # Left boundary = right edge of codes zone
+        # Right boundary = start of orders zone (names_zone_right_boundary)
+        names_zone_x = codes_zone_x + codes_zone_width + 5
         names_zone_x2 = names_zone_right_boundary
+
+        # Ensure names zone starts at or after the Monatssalat text position
+        if names_zone_x > monatssalat_box['x']:
+            names_zone_x = monatssalat_box['x'] - 5
 
         print(f"Product names zone: left={names_zone_x}, right={names_zone_x2} (Monatssalat at x={monatssalat_box['x']})")
 
@@ -784,6 +796,43 @@ def detect_order_zone(image_path=None):
         print(f"OCR-detected zone: x={zone_x}, y={zone_y}, w={zone_width}, h={zone_height}")
         print(f"Estimated {num_rows} rows")
 
+        # Saturday zone: right of Mo-Fr, only for products 600-608 (Sandwiches section)
+        # Find "Sandwich" or "600" in OCR results to determine Y position
+        sandwich_box = None
+        for detection in result:
+            bbox, text, confidence = detection
+            text_lower = text.lower().strip()
+            # Look for "Sandwich" which marks the start of 600-series products
+            if 'sandwich' in text_lower and 'crustino' not in text_lower:
+                x_coords = [p[0] for p in bbox]
+                y_coords = [p[1] for p in bbox]
+                sandwich_box = {
+                    'x': int(min(x_coords)),
+                    'y': int(min(y_coords)),
+                    'text': text
+                }
+                print(f"Found 'Sandwich' section at y={sandwich_box['y']}")
+                break
+
+        # Calculate Saturday zone
+        sa_zone = None
+        if sandwich_box:
+            # Sa column is right after Fr (zone_x2 is end of Fr)
+            sa_zone_x = zone_x2 + 2
+            sa_zone_width = int((zone_x2 - zone_x) / 5)  # Same width as one Mo-Fr column
+
+            # Y range: from "Sandwich" row to end of 600-series (approx 9 rows: 600-608)
+            sa_zone_y = sandwich_box['y'] - 5
+            sa_zone_height = avg_row_height * 9  # 9 products (600-608)
+
+            sa_zone = {
+                'x': sa_zone_x,
+                'y': sa_zone_y,
+                'width': sa_zone_width,
+                'height': sa_zone_height
+            }
+            print(f"Saturday zone: x={sa_zone['x']}, y={sa_zone['y']}, w={sa_zone['width']}, h={sa_zone['height']}")
+
         return {
             'zone': {
                 'x': zone_x,
@@ -791,6 +840,7 @@ def detect_order_zone(image_path=None):
                 'width': zone_width,
                 'height': zone_height
             },
+            'zoneSaturday': sa_zone,  # Second orders zone for Saturday
             'zoneCodes': codes_zone,
             'zoneNames': names_zone,
             'numRows': num_rows,
@@ -801,7 +851,8 @@ def detect_order_zone(image_path=None):
                 'method': 'ocr_anchors',
                 'anchor_top': monatssalat_box['text'],
                 'anchor_bottom': code_210_212_box['text'],
-                'cell_boundary_x': zone_x
+                'cell_boundary_x': zone_x,
+                'sandwich_found': sandwich_box is not None
             }
         }
 
@@ -819,19 +870,32 @@ def detect_order_zone(image_path=None):
         zone_width = int(w * 0.35)  # Estimate
         zone_height = int(h * 0.85) - zone_y
 
-        # Product codes zone: right of orders zone
+        # Product codes zone: LEFT side of form
+        left_lines = [x for x in v_lines if x < monatssalat_box['x'] - 50]
+        codes_zone_x = 50
+        codes_zone_width = 120
+        if len(left_lines) >= 2:
+            codes_zone_x = left_lines[0] + 2
+            codes_zone_width = left_lines[1] - left_lines[0] - 4
+        elif len(left_lines) >= 1:
+            codes_zone_x = left_lines[0] + 2
+
         codes_zone = {
-            'x': zone_x + zone_width + 5,
+            'x': codes_zone_x,
             'y': zone_y,
-            'width': 80,
+            'width': codes_zone_width,
             'height': zone_height
         }
 
-        # Product names zone: left of orders zone
+        # Product names zone: between codes and orders
+        names_zone_x = codes_zone_x + codes_zone_width + 5
+        if names_zone_x > monatssalat_box['x']:
+            names_zone_x = monatssalat_box['x'] - 5
+
         names_zone = {
-            'x': monatssalat_box['x'],
+            'x': names_zone_x,
             'y': zone_y,
-            'width': zone_x - monatssalat_box['x'] - 5,
+            'width': zone_x - names_zone_x - 5,
             'height': zone_height
         }
 
@@ -907,6 +971,29 @@ def _fallback_zone_detection(img, w, h):
     num_rows = max(10, min(100, num_rows))
     num_cols = max(1, min(10, num_cols))
 
+    # Product codes zone: LEFT side of form
+    left_v_lines = [l for l in v_lines if l['x'] < w * 0.15]
+    codes_zone_x = left_v_lines[0]['x'] + 2 if left_v_lines else 50
+    codes_zone_width = 120
+    if len(left_v_lines) >= 2:
+        codes_zone_width = left_v_lines[1]['x'] - left_v_lines[0]['x'] - 4
+
+    codes_zone = {
+        'x': codes_zone_x,
+        'y': zone_y,
+        'width': codes_zone_width,
+        'height': zone_height
+    }
+
+    # Product names zone: between codes and orders
+    names_zone_x = codes_zone_x + codes_zone_width + 5
+    names_zone = {
+        'x': names_zone_x,
+        'y': zone_y,
+        'width': zone_x - names_zone_x - 5,
+        'height': zone_height
+    }
+
     return {
         'zone': {
             'x': zone_x,
@@ -914,6 +1001,8 @@ def _fallback_zone_detection(img, w, h):
             'width': zone_width,
             'height': zone_height
         },
+        'zoneCodes': codes_zone,
+        'zoneNames': names_zone,
         'numRows': num_rows,
         'numCols': num_cols,
         'imageWidth': w,
@@ -1225,6 +1314,96 @@ def scan_row_based(zone_orders, zone_names, zone_codes, image_width, image_heigh
         })
 
     return {'results': results}
+
+
+def scan_row_info(y_center, zone_codes, zone_names, image_width, image_height):
+    """Scan product name and code for a specific Y position."""
+    print(f"Scanning row info at y_center={y_center}")
+
+    image_path = find_latest_image()
+    if not image_path:
+        return {'error': 'No image found'}
+
+    img = cv2.imread(image_path)
+    if img is None:
+        return {'error': 'Could not load image'}
+
+    h, w = img.shape[:2]
+    scale_x = w / image_width
+    scale_y = h / image_height
+
+    # Scale y_center to image coordinates
+    y_center_scaled = int(y_center * scale_y)
+    row_height = 53  # Approximate row height
+
+    product_code = ''
+    product_name = ''
+
+    # Extract and OCR product code from codes zone
+    if zone_codes and len(zone_codes) > 0:
+        # Use first codes zone
+        zc = zone_codes[0] if isinstance(zone_codes, list) else zone_codes
+        zc_x = int(zc['x'] * scale_x)
+        zc_y = int(zc['y'] * scale_y)
+        zc_w = int(zc['width'] * scale_x)
+        zc_h = int(zc['height'] * scale_y)
+
+        # Extract horizontal strip at y_center
+        strip_y1 = max(0, y_center_scaled - row_height // 2)
+        strip_y2 = min(h, y_center_scaled + row_height // 2)
+        strip_x1 = max(0, zc_x)
+        strip_x2 = min(w, zc_x + zc_w)
+
+        if strip_x2 > strip_x1 and strip_y2 > strip_y1:
+            code_strip = img[strip_y1:strip_y2, strip_x1:strip_x2]
+            # Run OCR on the strip
+            try:
+                ocr = get_ocr_engine()
+                if ocr and ocr.reader:
+                    result = ocr.reader.readtext(code_strip, detail=0)
+                    if result:
+                        # Join all detected text, filter for numbers
+                        text = ' '.join(result).strip()
+                        # Extract numbers only for product code
+                        numbers = ''.join(c for c in text if c.isdigit())
+                        if numbers:
+                            product_code = numbers
+                            print(f"  Code OCR: '{text}' -> '{product_code}'")
+            except Exception as e:
+                print(f"  Code OCR error: {e}")
+
+    # Extract and OCR product name from names zone
+    if zone_names:
+        zn = zone_names
+        zn_x = int(zn['x'] * scale_x)
+        zn_y = int(zn['y'] * scale_y)
+        zn_w = int(zn['width'] * scale_x)
+        zn_h = int(zn['height'] * scale_y)
+
+        # Extract horizontal strip at y_center
+        strip_y1 = max(0, y_center_scaled - row_height // 2)
+        strip_y2 = min(h, y_center_scaled + row_height // 2)
+        strip_x1 = max(0, zn_x)
+        strip_x2 = min(w, zn_x + zn_w)
+
+        if strip_x2 > strip_x1 and strip_y2 > strip_y1:
+            name_strip = img[strip_y1:strip_y2, strip_x1:strip_x2]
+            # Run OCR on the strip
+            try:
+                ocr = get_ocr_engine()
+                if ocr and ocr.reader:
+                    result = ocr.reader.readtext(name_strip, detail=0)
+                    if result:
+                        product_name = clean_product_name(' '.join(result).strip())
+                        print(f"  Name OCR: '{product_name}'")
+            except Exception as e:
+                print(f"  Name OCR error: {e}")
+
+    print(f"  Result: code='{product_code}', name='{product_name}'")
+    return {
+        'product_code': product_code,
+        'product_name': product_name
+    }
 
 
 def _run_ocr_batch(strips_to_ocr):
@@ -2032,6 +2211,22 @@ class ScannerHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_json({'success': False, 'error': 'No zones provided'})
             return
 
+        # API: Scan row info (product name and code for a specific Y position)
+        if path == '/api/scan-row-info':
+            y_center = data.get('y_center')
+            zone_codes = data.get('zoneCodes')
+            zone_names = data.get('zoneNames')
+            image_width = data.get('imageWidth', 2480)
+            image_height = data.get('imageHeight', 3508)
+
+            if y_center is None:
+                self.send_json({'error': 'No y_center specified'})
+                return
+
+            result = scan_row_info(y_center, zone_codes, zone_names, image_width, image_height)
+            self.send_json(result)
+            return
+
         # API: Row-based scanning (new strategy)
         if path == '/api/scan-row-based':
             zone_orders = data.get('zone')
@@ -2137,7 +2332,7 @@ def main():
     print(f"=" * 50)
     print(f"Interaktiver Bestellungs-Scanner")
     print(f"=" * 50)
-    print(f"Server: http://192.168.3.241:{PORT}/")
+    print(f"Server: http://192.168.8.100:{PORT}/")
     print(f"Templates: {TEMPLATES_DIR}")
     print(f"Training: {TRAINING_DIR}")
     print(f"=" * 50)

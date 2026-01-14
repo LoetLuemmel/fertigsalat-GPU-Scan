@@ -10,7 +10,7 @@ Lösung: Eigene Trainingsbeispiele sammeln und das Modell damit nachtrainieren.
 SCHRITT 1: Trainingssamples sammeln
 --------------------------------------------------------------------------------
 
-1. Web-Oberfläche öffnen: http://192.168.3.241:8080/
+1. Web-Oberfläche öffnen: http://192.168.8.100:8080/
 
 2. Ein Bestellformular laden (EML-Datei oder direkt scannen)
 

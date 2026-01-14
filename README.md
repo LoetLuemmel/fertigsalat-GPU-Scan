@@ -90,7 +90,7 @@ Der Scanner verarbeitet E-Mail-Anhänge (.eml mit PDF) und erkennt handgeschrieb
 python3 /home/test/email-processor/shared/templates/scanner_server.py
 
 # Im Browser öffnen
-http://192.168.3.241:8080/
+http://192.168.8.100:8080/
 ```
 
 ## Workflow

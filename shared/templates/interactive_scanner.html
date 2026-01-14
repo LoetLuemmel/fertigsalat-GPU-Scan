@@ -364,20 +364,20 @@
             <div class="panel">
                 <h3>Steuerung</h3>
                 <input type="file" id="fileInput" accept="image/*,.eml" style="display:none" onchange="handleFileSelect(this)">
-                <button class="btn primary guide-blink" id="loadFileBtn" onclick="document.getElementById('fileInput').click()">1. Datei laden</button>
-                <button class="btn danger" onclick="clearAllZones()">Alle Zonen löschen</button>
-                <button class="btn" onclick="autoDetectZones()" id="autoDetectBtn" style="background:#9b59b6;">Zone auto-erkennen</button>
+                <button class="btn primary guide-blink" id="loadFileBtn" onclick="document.getElementById('fileInput').click()" title="EML-Datei oder Bild laden">1. Datei laden</button>
+                <button class="btn danger" onclick="clearAllZones()" title="Alle definierten Zonen löschen">Alle Zonen löschen</button>
+                <button class="btn" onclick="autoDetectZones()" id="autoDetectBtn" style="background:#9b59b6;" title="Automatisch Zonen erkennen (OCR-basiert)">Zone auto-erkennen</button>
                 <br>
-                <button class="btn success" onclick="scanZone()" id="scanBtn" disabled>2. Zone scannen</button>
-                <button class="btn" onclick="reviewNext()" id="reviewBtn" disabled>Nächstes prüfen</button>
+                <button class="btn success" onclick="scanZone()" id="scanBtn" disabled title="Handschriftliche Ziffern in den Zonen erkennen">2. Zone scannen</button>
+                <button class="btn" onclick="reviewNext()" id="reviewBtn" disabled title="Zur nächsten unsicheren Erkennung springen">Nächstes prüfen</button>
             </div>
 
             <div class="panel">
                 <h3>Zonen definieren</h3>
                 <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Klicken Sie einen Button und zeichnen Sie die Zone im Bild:</p>
-                <button class="btn zone-btn" id="btnZoneOrders" onclick="handleOrdersButtonClick(event)" style="background:#00d4ff; color:#000;">Bestellmengen (0/2)</button>
-                <button class="btn zone-btn" id="btnZoneNames" onclick="setActiveZone('names')" style="background:#00ff00; color:#000;">Produktnamen</button>
-                <button class="btn zone-btn" id="btnZoneCodes" onclick="handleCodesButtonClick(event)" style="background:#ff9800; color:#000;">Produktnummern (0/3)</button>
+                <button class="btn zone-btn" id="btnZoneOrders" onclick="handleOrdersButtonClick(event)" style="background:#00d4ff; color:#000;" title="Klick: Zone zeichnen | Shift+Klick: Letzte Zone löschen">Bestellmengen (0/2)</button>
+                <button class="btn zone-btn" id="btnZoneNames" onclick="setActiveZone('names')" style="background:#00ff00; color:#000;" title="Klick: Zone zeichnen (überschreibt vorherige)">Produktnamen</button>
+                <button class="btn zone-btn" id="btnZoneCodes" onclick="handleCodesButtonClick(event)" style="background:#ff9800; color:#000;" title="Klick: Zone zeichnen | Shift+Klick: Letzte Zone löschen">Produktnummern (0/3)</button>
                 <div id="activeZoneInfo" style="margin-top:10px; padding:8px; background:#0a3d62; border-radius:5px; font-size:12px;">
                     Aktiv: <strong id="activeZoneName">Bestellmengen</strong>
                 </div>
@@ -1071,22 +1071,26 @@
         }
 
         async function suggestZone() {
+            // Always enable auto-detect button when image is loaded
+            document.getElementById('autoDetectBtn').disabled = false;
+
             // Try to load saved zones from server
             const loaded = await loadZonesFromServer();
             if (loaded) {
-                setStatus('Gespeicherte Zonen wiederhergestellt. Klicken Sie "Zonen scannen" oder passen Sie die Zonen an.');
+                setStatus('Gespeicherte Zonen wiederhergestellt. Klicken Sie "Zonen scannen" oder "Zone auto-erkennen" für neue Erkennung.');
                 setActiveZone('orders');
                 document.getElementById('zonePanel').style.display = 'block';
-                // If zones are complete, enable scan
+                // If zones are complete, enable scan but keep auto-detect available
                 if (zones.orders.length > 0 && zones.names && zones.codes.length > 0) {
                     setGuideStep('scan');
                 } else {
                     setGuideStep('detect');
                 }
             } else {
-                setStatus('Bild geladen. Wählen Sie eine Zone und zeichnen Sie sie im Bild.');
+                setStatus('Bild geladen. Klicken Sie "Zone auto-erkennen" oder zeichnen Sie manuell.');
                 setActiveZone('orders');
                 document.getElementById('zonePanel').style.display = 'block';
+                setGuideStep('detect');
                 updateZoneInfo();
             }
         }
@@ -1186,7 +1190,15 @@
 
             const coords = getCanvasCoords(e);
 
-            // First, check if we clicked on a zone handle
+            // Edit mode has priority - don't check zone handles when adding/deleting objects
+            if (editMode === 'add' || editMode === 'delete') {
+                isDrawing = true;
+                drawStart = coords;
+                editSelectionRect = { x: coords.x, y: coords.y, width: 0, height: 0 };
+                return;
+            }
+
+            // Check if we clicked on a zone handle (only when not in edit mode)
             const hit = findClickedZoneHandle(coords.x, coords.y);
             if (hit) {
                 // Start dragging the handle
@@ -1629,6 +1641,17 @@
                         width: data.zone.width * scaleX,
                         height: data.zone.height * scaleY
                     }];
+
+                    // Add Saturday zone if detected (second element)
+                    if (data.zoneSaturday) {
+                        zones.orders.push({
+                            x: data.zoneSaturday.x * scaleX,
+                            y: data.zoneSaturday.y * scaleY,
+                            width: data.zoneSaturday.width * scaleX,
+                            height: data.zoneSaturday.height * scaleY
+                        });
+                        console.log('Saturday zone detected:', zones.orders[1]);
+                    }
                     updateOrdersButtonText();
 
                     // Apply product codes zone if detected (add to array)
@@ -1670,7 +1693,8 @@
                     const debugInfo = data.debug || {};
                     const codesInfo = data.zoneCodes ? ' + Produktnummern' : '';
                     const namesInfo = data.zoneNames ? ' + Produktnamen' : '';
-                    setStatus(`Zone erkannt: ${data.numRows} Zeilen, ${data.numCols} Spalten${namesInfo}${codesInfo}. Klicken Sie "Zone scannen".`);
+                    const saturdayInfo = data.zoneSaturday ? ' + Samstag' : '';
+                    setStatus(`Zone erkannt: ${data.numRows} Zeilen, ${data.numCols} Spalten${namesInfo}${codesInfo}${saturdayInfo}. Klicken Sie "Zone scannen".`);
                     setMode('zone');
                     setGuideStep('scan');  // Highlight scan button
                     document.getElementById('instructions').innerHTML =
@@ -1913,42 +1937,89 @@
         }
 
         // Add new object at selection
-        function addObjectAtSelection(sel) {
-            if (!zones.orders) {
+        async function addObjectAtSelection(sel) {
+            if (!zones.orders || zones.orders.length === 0) {
                 setStatus('Bitte zuerst die Bestellmengen-Zone definieren.');
                 return;
             }
-
-            const zone = zones.orders;
-            const numRows = parseInt(document.getElementById('numRows').value) || 52;
-            const numCols = parseInt(document.getElementById('numCols').value) || 5;
-            const cellHeight = zone.height / numRows;
-            const cellWidth = zone.width / numCols;
 
             // Calculate center of selection
             const centerX = sel.x + sel.width / 2;
             const centerY = sel.y + sel.height / 2;
 
-            // Determine row and column
-            const relX = centerX - zone.x;
-            const relY = centerY - zone.y;
-            const row = Math.floor(relY / cellHeight);
-            const col = Math.floor(relX / cellWidth);
+            // Find which orders zone the selection is in
+            let foundZone = null;
+            let zoneIndex = -1;
+            for (let i = 0; i < zones.orders.length; i++) {
+                const z = zones.orders[i];
+                if (centerX >= z.x && centerX <= z.x + z.width &&
+                    centerY >= z.y && centerY <= z.y + z.height) {
+                    foundZone = z;
+                    zoneIndex = i;
+                    break;
+                }
+            }
 
-            if (row < 0 || row >= numRows || col < 0 || col >= numCols) {
-                setStatus('Auswahl liegt außerhalb der Bestellmengen-Zone.');
+            if (!foundZone) {
+                setStatus('Auswahl liegt außerhalb der Bestellmengen-Zonen.');
                 return;
             }
 
-            const COLUMNS = ['Mo', 'Di', 'Mi', 'Do', 'Fr'];
-            const columnName = col < COLUMNS.length ? COLUMNS[col] : `Col${col + 1}`;
+            // Determine column based on zone
+            let columnName;
+            if (zoneIndex === 0) {
+                // Mo-Fr zone (5 columns)
+                const COLUMNS_MOFR = ['Mo', 'Di', 'Mi', 'Do', 'Fr'];
+                const cellWidth = foundZone.width / 5;
+                const relX = centerX - foundZone.x;
+                const col = Math.floor(relX / cellWidth);
+                columnName = col >= 0 && col < COLUMNS_MOFR.length ? COLUMNS_MOFR[col] : 'Mo';
+            } else {
+                // Sa zone (1 column)
+                columnName = 'Sa';
+            }
 
-            // Get product info from static lookup table
-            const productInfo = getProductInfo(row);
-            const productName = productInfo.name;
-            const productCode = productInfo.code;
+            // Calculate row number based on first orders zone (Mo-Fr)
+            const primaryZone = zones.orders[0];
+            const numRows = parseInt(document.getElementById('numRows').value) || 52;
+            const cellHeight = primaryZone.height / numRows;
+            const relY = centerY - primaryZone.y;
+            const row = Math.floor(relY / cellHeight);
 
-            console.log(`Adding object at row ${row}: name='${productName}', code='${productCode}'`);
+            // Scan product info from zones using OCR
+            let productName = '';
+            let productCode = '';
+
+            setStatus('Scanne Produktinfo...', true);
+
+            try {
+                const response = await fetch('/api/scan-row-info', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        y_center: centerY,
+                        zoneCodes: zones.codes,
+                        zoneNames: zones.names,
+                        imageWidth: canvas.width,
+                        imageHeight: canvas.height
+                    })
+                });
+                const data = await response.json();
+                if (data.product_code) productCode = data.product_code;
+                if (data.product_name) productName = data.product_name;
+                console.log(`OCR result: code='${productCode}', name='${productName}'`);
+            } catch (e) {
+                console.error('Error scanning row info:', e);
+            }
+
+            // Fallback to static lookup table if OCR failed
+            if (!productName || !productCode) {
+                const productInfo = getProductInfo(row);
+                if (!productName) productName = productInfo.name;
+                if (!productCode) productCode = productInfo.code;
+            }
+
+            console.log(`Adding object: row=${row}, day=${columnName}, name='${productName}', code='${productCode}'`);
 
             // Create new result entry
             const newResult = {
@@ -1956,6 +2027,7 @@
                 confidence: 1.0,
                 row: row + 1,
                 column: columnName,
+                y_center: centerY,  // For sorting
                 product_name: productName,
                 product_code: productCode,
                 x: sel.x,
@@ -2009,7 +2081,16 @@
             }
 
             // Tab / Shift+Tab: navigate between results
-            if (e.key === 'Tab' && results.length > 0) {
+            if (e.key === 'Tab') {
+                // Skip if focus is on an input field (let browser handle normally)
+                if (document.activeElement.tagName === 'INPUT') {
+                    return;  // Don't prevent default, let Tab move between inputs
+                }
+
+                if (results.length === 0) {
+                    return;  // No results to navigate
+                }
+
                 e.preventDefault();
 
                 // Get sorted results for navigation (same order as displayed)
@@ -2044,6 +2125,10 @@
                 if (row) {
                     row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }
+
+                // Show status feedback
+                const r = results[nextIndex];
+                setStatus(`Blob ${nextPos + 1}/${results.length}: ${r.product_name || 'Zeile ' + r.row} - ${r.column}`);
             }
         });
 

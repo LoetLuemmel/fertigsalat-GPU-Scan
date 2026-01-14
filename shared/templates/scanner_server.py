@@ -609,7 +609,7 @@ def main():
     print(f"=" * 50)
     print(f"Interaktiver Bestellungs-Scanner")
     print(f"=" * 50)
-    print(f"Server: http://192.168.3.241:{PORT}/")
+    print(f"Server: http://192.168.8.100:{PORT}/")
     print(f"Templates: {TEMPLATES_DIR}")
     print(f"Training: {TRAINING_DIR}")
     print(f"=" * 50)
