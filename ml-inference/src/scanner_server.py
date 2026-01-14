@@ -49,6 +49,21 @@ def get_ocr_engine():
 # Lazy-loaded EMNIST model for digit recognition
 _emnist_model = None
 
+# Lazy-loaded EasyOCR reader for text recognition
+_easyocr_reader = None
+
+def get_easyocr_reader():
+    """Get or initialize the EasyOCR reader (lazy loading)."""
+    global _easyocr_reader
+    if _easyocr_reader is None:
+        try:
+            import easyocr
+            _easyocr_reader = easyocr.Reader(['de'], gpu=True, verbose=False)
+            print("EasyOCR reader initialized (persistent)")
+        except Exception as e:
+            print(f"Warning: Could not initialize EasyOCR: {e}")
+    return _easyocr_reader
+
 def get_emnist_model():
     """Get or initialize the EMNIST digit recognition model (lazy loading)."""
     global _emnist_model
@@ -1407,25 +1422,17 @@ def scan_row_info(y_center, zone_codes, zone_names, image_width, image_height):
 
 
 def _run_ocr_batch(strips_to_ocr):
-    """Run OCR on all strips in a single subprocess. Must be called BEFORE TensorFlow loads."""
+    """Run OCR on all strips using the persistent global reader."""
     if not strips_to_ocr:
         return {}
 
-    # Run batch OCR in subprocess
-    ocr_script = '''
-import sys
-import os
-import json
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-try:
-    import easyocr
-    import re
-    reader = easyocr.Reader(["de"], gpu=True, verbose=False)
+    reader = get_easyocr_reader()
+    if reader is None:
+        print("EasyOCR reader not available for batch OCR")
+        return {}
 
-    strips = ''' + json.dumps(strips_to_ocr) + '''
     results = {}
-
-    for strip in strips:
+    for strip in strips_to_ocr:
         path = strip['path']
         strip_type = strip['type']
         y = strip['y']
@@ -1435,52 +1442,29 @@ try:
             results[key] = ''
             continue
 
-        ocr_results = reader.readtext(path)
-        if not ocr_results:
+        try:
+            ocr_results = reader.readtext(path)
+            if not ocr_results:
+                results[key] = ''
+                continue
+
+            texts = [r[1] for r in ocr_results]
+            full_text = ' '.join(texts).strip()
+
+            if strip_type == 'code':
+                # Extract only digits and hyphens for product codes
+                clean = re.sub(r'[^0-9\-()]', '', full_text)
+                results[key] = clean
+            else:
+                # Product name - keep text, remove leading numbers
+                clean = re.sub(r'^[0-9\-]+\s*', '', full_text)
+                results[key] = clean
+        except Exception as e:
+            print(f"OCR error for {path}: {e}")
             results[key] = ''
-            continue
 
-        texts = [r[1] for r in ocr_results]
-        full_text = ' '.join(texts).strip()
-
-        if strip_type == 'code':
-            # Extract only digits and hyphens for product codes
-            clean = re.sub(r'[^0-9\\-()]', '', full_text)
-            results[key] = clean
-        else:
-            # Product name - keep text, remove leading numbers
-            clean = re.sub(r'^[0-9\\-]+\\s*', '', full_text)
-            results[key] = clean
-
-    print("OCR_RESULT:" + json.dumps(results))
-except Exception as e:
-    print("OCR_ERROR:" + str(e), file=sys.stderr)
-    import traceback
-    traceback.print_exc()
-'''
-
-    try:
-        result = subprocess.run(
-            ['python3', '-c', ocr_script],
-            capture_output=True, text=True, timeout=180
-        )
-
-        # Parse OCR results
-        ocr_data = {}
-        for line in result.stdout.strip().split('\n'):
-            if line.startswith('OCR_RESULT:'):
-                ocr_data = json.loads(line[11:])
-                break
-
-        if result.stderr:
-            print(f"OCR stderr: {result.stderr[:500]}")
-
-        print(f"OCR completed: {len(ocr_data)} strips processed")
-        return ocr_data
-
-    except Exception as e:
-        print(f"Batch OCR error: {e}")
-        return {}
+    print(f"OCR completed: {len(results)} strips processed")
+    return results
 
 
 def scan_zone_in_docker(zone, num_rows, num_cols, image_width, image_height, fixed_column='', zone_codes=None, zone_names=None):
@@ -1513,7 +1497,13 @@ import glob
 import re
 import cv2
 import numpy as np
-import subprocess
+import easyocr
+
+# Initialize EasyOCR reader once (persistent)
+print("Loading EasyOCR reader (persistent)...")
+_reader = easyocr.Reader(['de'], gpu=True, verbose=False)
+print("EasyOCR reader loaded.")
+
 # Product codes zone (for reading product numbers)
 zone_codes = {zone_codes_str}
 # Product names zone (for reading product names)
@@ -1525,7 +1515,7 @@ product_code_cache = {{}}
 product_name_cache = {{}}
 
 def read_product_codes_from_zone():
-    """Read all product codes from the product codes zone using EasyOCR in subprocess."""
+    """Read all product codes from the product codes zone using persistent EasyOCR reader."""
     global product_code_cache
     # Clear cache for new scan
     product_code_cache = {{}}
@@ -1544,64 +1534,28 @@ def read_product_codes_from_zone():
     if codes_img.size == 0:
         return
 
-    # Save for OCR subprocess
+    # Save for debugging
     codes_img_path = '/app/templates/debug_cells/product_codes_zone.png'
     cv2.imwrite(codes_img_path, codes_img)
 
-    # Run EasyOCR in subprocess to avoid memory corruption
-    ocr_script = """
-import sys
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-try:
-    import easyocr
-    import json
-    reader = easyocr.Reader(["de"], gpu=True, verbose=False)
-    results = reader.readtext("/app/templates/debug_cells/product_codes_zone.png")
-    output = []
-    for (bbox, text, conf) in results:
-        y_center = (bbox[0][1] + bbox[2][1]) / 2
-        output.append({{"y": y_center, "text": text, "conf": conf}})
-    print("OCR_RESULT:" + json.dumps(output))
-except Exception as e:
-    print("OCR_ERROR:" + str(e), file=sys.stderr)
-    import traceback
-    traceback.print_exc()
-"""
     try:
-        result = subprocess.run(
-            ['python3', '-c', ocr_script],
-            capture_output=True, text=True, timeout=120
-        )
-
-        # Debug output
+        # Use persistent EasyOCR reader
         print(f"Product codes zone: {{codes_w}}x{{codes_h}}")
-        if result.stderr:
-            print(f"OCR stderr: {{result.stderr[:500]}}")
+        results = _reader.readtext(codes_img)
 
-        # Parse output
         row_height = codes_h / num_rows
-        ocr_found = False
-        for line in result.stdout.strip().split('\\n'):
-            if line.startswith('OCR_RESULT:'):
-                ocr_found = True
-                json_str = line[11:]  # Remove prefix
-                data = json.loads(json_str)
-                print(f"OCR found {{len(data)}} text items")
-                for item in data:
-                    y_center = item['y']
-                    text = item['text'].strip()
-                    row = int(y_center / row_height)
-                    if 0 <= row < num_rows:
-                        # Keep digits, hyphens, parentheses (for codes like "1-12", "(210-212)")
-                        clean_text = re.sub(r'[^0-9\\-\\(\\)]', '', text)
-                        if clean_text and row not in product_code_cache:
-                            product_code_cache[row] = clean_text
-                            print(f"  Row {{row}}: '{{clean_text}}'")
-                break
+        print(f"OCR found {{len(results)}} text items")
 
-        if not ocr_found:
-            print(f"No OCR_RESULT found. stdout: {{result.stdout[:300]}}")
+        for (bbox, text, conf) in results:
+            y_center = (bbox[0][1] + bbox[2][1]) / 2
+            text = text.strip()
+            row = int(y_center / row_height)
+            if 0 <= row < num_rows:
+                # Keep digits, hyphens, parentheses (for codes like "1-12", "(210-212)")
+                clean_text = re.sub(r'[^0-9\\-\\(\\)]', '', text)
+                if clean_text and row not in product_code_cache:
+                    product_code_cache[row] = clean_text
+                    print(f"  Row {{row}}: '{{clean_text}}'")
 
         print(f"Total product codes found: {{len(product_code_cache)}}")
     except Exception as e:
@@ -1618,7 +1572,7 @@ def get_product_name(row_num):
     return product_name_cache.get(row_num, '')
 
 def read_product_names_from_zone():
-    """Read all product names from the product names zone using EasyOCR in subprocess."""
+    """Read all product names from the product names zone using persistent EasyOCR reader."""
     global product_name_cache
     # Clear cache for new scan
     product_name_cache = {{}}
@@ -1637,64 +1591,28 @@ def read_product_names_from_zone():
     if names_img.size == 0:
         return
 
-    # Save for OCR subprocess
+    # Save for debugging
     names_img_path = '/app/templates/debug_cells/product_names_zone.png'
     cv2.imwrite(names_img_path, names_img)
 
-    # Run EasyOCR in subprocess to avoid memory corruption
-    ocr_script = """
-import sys
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-try:
-    import easyocr
-    import json
-    reader = easyocr.Reader(["de"], gpu=True, verbose=False)
-    results = reader.readtext("/app/templates/debug_cells/product_names_zone.png")
-    output = []
-    for (bbox, text, conf) in results:
-        y_center = (bbox[0][1] + bbox[2][1]) / 2
-        output.append({{"y": y_center, "text": text, "conf": conf}})
-    print("OCR_RESULT:" + json.dumps(output))
-except Exception as e:
-    print("OCR_ERROR:" + str(e), file=sys.stderr)
-    import traceback
-    traceback.print_exc()
-"""
     try:
-        result = subprocess.run(
-            ['python3', '-c', ocr_script],
-            capture_output=True, text=True, timeout=120
-        )
-
-        # Debug output
+        # Use persistent EasyOCR reader
         print(f"Product names zone: {{names_w}}x{{names_h}}")
-        if result.stderr:
-            print(f"Names OCR stderr: {{result.stderr[:500]}}")
+        results = _reader.readtext(names_img)
 
-        # Parse output
         row_height = names_h / num_rows
-        ocr_found = False
-        for line in result.stdout.strip().split('\\n'):
-            if line.startswith('OCR_RESULT:'):
-                ocr_found = True
-                json_str = line[11:]  # Remove prefix
-                data = json.loads(json_str)
-                print(f"Names OCR found {{len(data)}} text items")
-                for item in data:
-                    y_center = item['y']
-                    text = item['text'].strip()
-                    row = int(y_center / row_height)
-                    if 0 <= row < num_rows:
-                        # Keep the product name as-is (just clean whitespace)
-                        clean_text = ' '.join(text.split())
-                        if clean_text and row not in product_name_cache:
-                            product_name_cache[row] = clean_text
-                            print(f"  Row {{row}}: '{{clean_text}}'")
-                break
+        print(f"Names OCR found {{len(results)}} text items")
 
-        if not ocr_found:
-            print(f"No names OCR_RESULT found. stdout: {{result.stdout[:300]}}")
+        for (bbox, text, conf) in results:
+            y_center = (bbox[0][1] + bbox[2][1]) / 2
+            text = text.strip()
+            row = int(y_center / row_height)
+            if 0 <= row < num_rows:
+                # Keep the product name as-is (just clean whitespace)
+                clean_text = ' '.join(text.split())
+                if clean_text and row not in product_name_cache:
+                    product_name_cache[row] = clean_text
+                    print(f"  Row {{row}}: '{{clean_text}}'")
 
         print(f"Total product names found: {{len(product_name_cache)}}")
     except Exception as e:
@@ -1702,34 +1620,24 @@ except Exception as e:
         import traceback
         traceback.print_exc()
 
-def run_easyocr_subprocess(image_path):
-    """Run EasyOCR in a separate subprocess to avoid memory corruption issues."""
-    ocr_script = """
-import easyocr
-import cv2
-import json
-
-reader = easyocr.Reader(['de'], gpu=True, verbose=False)
-img = cv2.imread("{{image_path}}")
-if img is not None:
-    results = reader.readtext(img)
-    texts = [r[1] for r in results]
-    print(json.dumps({{{{"text": " ".join(texts)}}}}))
-else:
-    print(json.dumps({{{{"text": ""}}}}))
-""".format(image_path=image_path)
+def run_easyocr_direct(image_path):
+    """Run EasyOCR using the persistent global reader."""
     try:
-        result = subprocess.run(
-            ['python3', '-c', ocr_script],
-            capture_output=True, text=True, timeout=30
-        )
-        # Parse output even if process crashed after printing
-        for line in result.stdout.strip().split('\\n'):
-            if line.startswith('{{'):
-                data = json.loads(line)
-                return data.get('text', '')
+        reader = get_easyocr_reader()
+        if reader is None:
+            print("EasyOCR reader not available")
+            return ""
+
+        img = cv2.imread(image_path)
+        if img is None:
+            print(f"Could not read image: {image_path}")
+            return ""
+
+        results = reader.readtext(img)
+        texts = [r[1] for r in results]
+        return " ".join(texts)
     except Exception as e:
-        print(f"Subprocess OCR error: {{e}}")
+        print(f"EasyOCR error: {e}")
     return ""
 
 # NO digit recognition in subprocess - will be done in main process
@@ -1820,7 +1728,7 @@ def get_product_info(row_num, blob_y_in_zone):
 
     # Run OCR on the strip using EasyOCR (in subprocess to avoid memory issues)
     try:
-        full_text = run_easyocr_subprocess(debug_path)  # Uses the saved debug image
+        full_text = run_easyocr_direct(debug_path)  # Uses persistent global reader
 
         # Try to extract product code (usually at the start, like "1-12", "30", "600", etc.)
         code_match = re.match(r'^([\\d]{{1,3}}(?:-[\\d]{{1,3}})?)', full_text.strip())
