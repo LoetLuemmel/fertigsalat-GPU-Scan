@@ -4,6 +4,10 @@ Multi-Container-System zur automatischen Online-Verarbeitung von Bestellformular
 
 <img width="1662" height="120" alt="image" src="https://github.com/user-attachments/assets/1e9da693-b250-4388-87ea-32e524e6caa9" />
 
+Das System ist unter dieser Domain live: https://foxera.390er.de
+
+Die URL ist eine "Altlast" und um Aufwendungen gering zu halten, wurde die Foxera App hier gehostet. Mittelfristig soll sie sicherlich auf die fertigsalat.ch Domain umziehen oder wird nur intern ggenutzt.
+
 
 <img width="1920" height="976" alt="image" src="https://github.com/user-attachments/assets/080a5ba1-0445-44e4-9cda-2a5f26516e09" />
 
