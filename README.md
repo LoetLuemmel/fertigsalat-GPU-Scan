@@ -35,6 +35,9 @@ docker compose up -d
 docker compose logs -f
 ```
 
+<img width="1231" height="85" alt="image" src="https://github.com/user-attachments/assets/7694752b-4069-463f-83af-1441f419e9ec" />
+
+
 ## Projektstruktur
 
 ```
