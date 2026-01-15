@@ -136,8 +136,17 @@ http://192.168.8.100:8080/
 ### 4. Ergebnisse prüfen
 - Tabelle zeigt alle erkannten Bestellungen
 - **Klick auf Zeile**: Markiert die Zelle im Bild
+- 
+<img width="43" height="42" alt="image" src="https://github.com/user-attachments/assets/4669975e-a79f-4948-81f3-e192f9e474e6" />
+
 - **Doppelklick**: Öffnet Dialog zur Korrektur
+
+<img width="353" height="335" alt="image" src="https://github.com/user-attachments/assets/104a1c98-f60f-4cc8-813c-99390f1e0b60" />
+
 - **Direkte Eingabe**: Menge im Eingabefeld ändern
+
+<img width="298" height="35" alt="image" src="https://github.com/user-attachments/assets/0e9d3bfa-05ef-4cdb-afa3-084bb6c26f77" />
+
 - Korrigierte Werte werden als Training-Daten gespeichert
 
 <img width="294" height="636" alt="image" src="https://github.com/user-attachments/assets/4bb84736-dcb3-4b86-9b32-dd4994bff790" />
