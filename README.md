@@ -104,6 +104,9 @@ http://192.168.8.100:8080/
 - Bei E-Mails: PDF wird automatisch extrahiert und in Bild konvertiert (300 DPI)
 - Automatische Orientierungskorrektur und Deskew
 
+<img width="426" height="108" alt="image" src="https://github.com/user-attachments/assets/a175b963-91f6-4c3e-83dd-1d99f37e7dcb" />
+
+
 ### 2. Zonen definieren
 - **Zone auto-erkennen**: Erkennt Tabellenstruktur automatisch
 - Oder manuell zeichnen:
