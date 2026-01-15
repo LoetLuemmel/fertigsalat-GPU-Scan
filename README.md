@@ -112,6 +112,9 @@ http://192.168.8.100:8080/
   - **Produktnummern (orange)**: Spalte mit Artikelnummern
 - Zeilen/Spalten-Anzahl anpassen falls nötig
 
+<img width="401" height="115" alt="image" src="https://github.com/user-attachments/assets/1859c582-78a0-49b5-853a-03f960980751" />
+
+
 ### 3. Scannen
 - Klick auf **"2. Zone scannen"**
 - Erkennt handgeschriebene Ziffern in jeder Zelle
