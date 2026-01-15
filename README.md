@@ -2,6 +2,9 @@
 
 Multi-Container-System zur automatischen Verarbeitung von Bestellformularen aus E-Mail-Anhängen.
 
+<img width="1920" height="976" alt="image" src="https://github.com/user-attachments/assets/080a5ba1-0445-44e4-9cda-2a5f26516e09" />
+
+
 ## Architektur
 
 ```
