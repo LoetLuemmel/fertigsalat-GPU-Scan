@@ -190,6 +190,9 @@ Diese können für Finetuning des OCR-Modells verwendet werden.
 | Rot | Unsichere Erkennung (Konfidenz < 50%) |
 | Pulsierend | Aktuell ausgewählte Zelle |
 
+<img width="664" height="302" alt="image" src="https://github.com/user-attachments/assets/250aeb1d-47a0-4356-9112-75bc41680be4" />
+
+
 ## Tastenkürzel
 
 - **Klick auf Bild**: Wählt die entsprechende Zeile in der Tabelle
