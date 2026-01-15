@@ -422,6 +422,16 @@
 
             <div class="panel">
                 <h3>Erkannte Bestellungen (<span id="orderCount">0</span>)</h3>
+                <div style="margin-bottom:10px; padding:10px; background:#1a1a2e; border-radius:5px; display:flex; gap:15px; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:5px;">
+                        <label for="customerNumberInput" style="color:#e91e63; font-weight:bold;">Kundennummer:</label>
+                        <input type="text" id="customerNumberInput" placeholder="z.B. M90" style="width:100px; padding:5px 8px; border:1px solid #e91e63; border-radius:4px; background:#2a2a3e; color:#fff;">
+                    </div>
+                    <div style="display:flex; align-items:center; gap:5px;">
+                        <label for="kwInput" style="color:#00d4ff; font-weight:bold;">KW:</label>
+                        <input type="text" id="kwInput" placeholder="z.B. 03" style="width:60px; padding:5px 8px; border:1px solid #00d4ff; border-radius:4px; background:#2a2a3e; color:#fff;">
+                    </div>
+                </div>
                 <div>
                     <table class="results-table">
                         <thead>
@@ -706,6 +716,8 @@
             document.getElementById('resultsBody').innerHTML =
                 '<tr><td colspan="5" style="text-align:center;color:#666;">Noch keine Ergebnisse</td></tr>';
             document.getElementById('orderCount').textContent = '0';
+            document.getElementById('customerNumberInput').value = '';
+            document.getElementById('kwInput').value = '';
 
             // Reset statistics
             document.getElementById('statTotal').textContent = '0';
@@ -1592,6 +1604,8 @@
             document.getElementById('reviewBtn').disabled = true;
             document.getElementById('resultsBody').innerHTML =
                 '<tr><td colspan="5" style="text-align:center;color:#666;">Noch keine Ergebnisse</td></tr>';
+            document.getElementById('customerNumberInput').value = '';
+            document.getElementById('kwInput').value = '';
             updateStats();
             updateZoneInfo();
             redraw();
@@ -2135,6 +2149,9 @@
         async function scanZone() {
             if (!zones.orders) return;
 
+            const startTime = performance.now();
+            console.log(`[SCAN] Start: ${new Date().toISOString()}`);
+
             document.getElementById('scanBtn').disabled = true;
 
             try {
@@ -2180,11 +2197,16 @@
                 updateStats();
                 redraw();
 
+                const endTime = performance.now();
+                const duration = ((endTime - startTime) / 1000).toFixed(2);
+                console.log(`[SCAN] Ende: ${new Date().toISOString()}`);
+                console.log(`[SCAN] Dauer: ${duration} Sekunden`);
+
                 document.getElementById('scanBtn').disabled = false;
                 document.getElementById('reviewBtn').disabled = results.length === 0;
 
                 const pending = results.filter(r => !r.reviewed && r.confidence < 0.7).length;
-                setStatus(`Scan abgeschlossen: ${results.length} Einträge, ${pending} zur Überprüfung.`);
+                setStatus(`Scan abgeschlossen: ${results.length} Einträge, ${pending} zur Überprüfung. (${duration}s)`);
                 setMode('review');
                 setGuideStep('none');
                 document.getElementById('instructions').innerHTML =
@@ -2351,14 +2373,21 @@
         }
 
         function exportResults() {
-            const exportData = results.map(r => ({
-                quantity: r.digit,
-                productCode: r.product_code || r.row,
-                productName: r.product_name || `Zeile ${r.row}`,
-                column: r.column,
-                confidence: r.confidence,
-                reviewed: r.reviewed || false
-            }));
+            const customerNumber = document.getElementById('customerNumberInput').value.trim() || 'unbekannt';
+            const kw = document.getElementById('kwInput').value.trim() || 'unbekannt';
+
+            const exportData = {
+                customerNumber: customerNumber,
+                kw: kw,
+                orders: results.map(r => ({
+                    quantity: r.digit,
+                    productCode: r.product_code || r.row,
+                    productName: r.product_name || `Zeile ${r.row}`,
+                    column: r.column,
+                    confidence: r.confidence,
+                    reviewed: r.reviewed || false
+                }))
+            };
 
             const blob = new Blob([JSON.stringify(exportData, null, 2)], {type: 'application/json'});
             const url = URL.createObjectURL(blob);
