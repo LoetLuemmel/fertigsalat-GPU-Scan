@@ -1,6 +1,9 @@
 # Email-Processor Pipeline
 
-Multi-Container-System zur automatischen Verarbeitung von Bestellformularen aus E-Mail-Anhängen.
+Multi-Container-System zur automatischen Online-Verarbeitung von Bestellformularen aus E-Mail-Anhängen.
+
+<img width="1662" height="120" alt="image" src="https://github.com/user-attachments/assets/1e9da693-b250-4388-87ea-32e524e6caa9" />
+
 
 <img width="1920" height="976" alt="image" src="https://github.com/user-attachments/assets/080a5ba1-0445-44e4-9cda-2a5f26516e09" />
 
