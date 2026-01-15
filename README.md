@@ -211,5 +211,4 @@ Diese können für Finetuning des OCR-Modells verwendet werden.
 ## Bekannte Einschränkungen
 
 - Nur erste Seite von mehrseitigen PDFs wird verarbeitet
-- EasyOCR für Produktnamen läuft im CPU-Modus (Speicher-Probleme mit GPU)
 - Sehr schlechte Handschrift kann zu niedrigen Konfidenzwerten führen
