@@ -127,6 +127,9 @@ http://192.168.8.100:8080/
 ### 5. Export
 - **Export JSON**: Speichert alle Bestellungen als JSON-Datei
 
+<img width="435" height="367" alt="image" src="https://github.com/user-attachments/assets/b3d1fd0e-73d3-4d16-bfa1-f829c37bb4a1" />
+
+
 ## API-Endpunkte
 
 | Endpunkt | Methode | Beschreibung |
