@@ -185,6 +185,9 @@ http://192.168.8.100:8080/
 
 Korrigierte Erkennungen werden automatisch gespeichert:
 
+<img width="265" height="95" alt="image" src="https://github.com/user-attachments/assets/b44ce84a-f096-442f-ba5c-47f584f6f790" />
+
+
 ```
 shared/training_data/
 ├── 0/
