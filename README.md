@@ -174,6 +174,9 @@ shared/training_data/
 └── 9/
 ```
 
+<img width="58" height="56" alt="image" src="https://github.com/user-attachments/assets/c421fe05-e935-484f-9fdd-7bd1e8fc2c64" />
+
+
 Diese können für Finetuning des OCR-Modells verwendet werden.
 
 ## Farbkodierung im Bild
