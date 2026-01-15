@@ -140,6 +140,9 @@ http://192.168.8.100:8080/
 - **Direkte Eingabe**: Menge im Eingabefeld ändern
 - Korrigierte Werte werden als Training-Daten gespeichert
 
+<img width="294" height="636" alt="image" src="https://github.com/user-attachments/assets/4bb84736-dcb3-4b86-9b32-dd4994bff790" />
+
+
 ### 5. Export
 - **Export JSON**: Speichert alle Bestellungen als JSON-Datei
 
