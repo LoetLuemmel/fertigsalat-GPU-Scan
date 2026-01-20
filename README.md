@@ -110,8 +110,8 @@ http://192.168.8.100:8080/
 
 ## Diagramm ##
 
-Leider clippt je nach Display der SVG viewer die Texteinträge ab.
-Bei Fragen einfach kurz auf "Edit" klicken und den Text im Code lesen.
+Leider clippt, je nach Display, der SVG-Viewer von GitHub die Texteinträge der Knoten ab.
+Bei Fragen einfach kurz auf "Edit" klicken und den Text im einfach im Code lesen.
 
 ```mermaid
 %%{init: {"flowchart": {"useMaxWidth": false, "htmlLabels": true}, "themeVariables": {"fontSize": "10px"}}}%%
