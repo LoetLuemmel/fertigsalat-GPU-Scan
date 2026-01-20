@@ -108,6 +108,58 @@ http://192.168.8.100:8080/
 
 ## Workflow
 
+## Diagramm ##
+
+Leider clippt je nach Display der SVG viewer die Texteinträge ab.
+Bei Fragen einfach kurz auf "Edit" klicken und den Text im Code lesen.
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false, "htmlLabels": true}, "themeVariables": {"fontSize": "10px"}}}%%
+
+flowchart TD
+
+  subgraph U["Upload & Preprocessing"]
+    A["EML-Datei / Bild Upload"];
+    B["Parse EML-Datei->PDF->Bild"];
+    C["Image Preprocessing<br>(Deskew/Denoise)"];
+  end
+
+  subgraph Z["Zone-Erkennung"]
+    D{"Auto Detect<br>Zones?"};
+    D2["Manuelles Definieren"];
+    E["Tabellen- & Feldbereiche<br>(Zonen)"];
+  end
+
+  subgraph S["Scan & Erkennung"]
+    F["OCR scan pro Zone<br>(GPU)"];
+    G["Produktnummern<br>lesen"];
+    H["Produktnamen<br>lesen"];
+  end
+
+  subgraph P["Pruefung & Ergebnis"]
+    I["Ergebnisse pruefen<br>& korrigieren"];
+    J["Training Sample speichern<br>(optional)"];
+    K["Export:<br>JSON"];
+  end
+
+  A --> B;
+  B --> C;
+  C --> D;
+
+  D -->|Ja| E;
+  D -->|Nein| D2;
+  D2 --> E;
+
+  E --> F;
+  F --> G;
+  G --> H;
+  H --> I;
+
+  I --> J;
+  I --> K;
+
+```
+
 ### 1. Datei laden
 - Klick auf **"1. Datei laden"**
 - Unterstützt: `.eml` (E-Mail mit PDF-Anhang) oder direkt Bilder
