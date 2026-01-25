@@ -2237,6 +2237,54 @@ class ScannerHandler(http.server.SimpleHTTPRequestHandler):
             self.send_error(400, 'Invalid JSON')
             return
 
+        # API: Rotate document 180° and apply deskew
+        if path == '/api/rotate-and-deskew':
+            image_data = data.get('imageData')
+            if not image_data:
+                self.send_json({'error': 'No imageData provided'})
+                return
+
+            try:
+                # Decode base64 image
+                if ',' in image_data:
+                    image_data = image_data.split(',')[1]
+                img_bytes = base64.b64decode(image_data)
+
+                # Convert to OpenCV image
+                nparr = np.frombuffer(img_bytes, np.uint8)
+                image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+                if image is None:
+                    self.send_json({'error': 'Could not decode image'})
+                    return
+
+                # Apply deskew
+                image, deskew_angle = deskew(image)
+
+                # Save to intermediate directory
+                import time
+                timestamp = int(time.time() * 1000)
+                subdir = os.path.join(INTERMEDIATE_DIR, f'rotated_{timestamp}')
+                os.makedirs(subdir, exist_ok=True)
+                output_path = os.path.join(subdir, 'page_000_normalized.png')
+                cv2.imwrite(output_path, image)
+                print(f"Saved rotated image: {output_path}")
+
+                # Encode back to base64
+                _, encoded = cv2.imencode('.png', image)
+                result_base64 = base64.b64encode(encoded.tobytes()).decode('utf-8')
+
+                self.send_json({
+                    'imageData': f'data:image/png;base64,{result_base64}',
+                    'deskewAngle': round(deskew_angle, 2) if deskew_angle != 0 else None
+                })
+                return
+
+            except Exception as e:
+                print(f"Rotate error: {e}")
+                self.send_json({'error': str(e)})
+                return
+
         # API: Auto-detect zones
         if path == '/api/detect-zones':
             result = detect_order_zone()
