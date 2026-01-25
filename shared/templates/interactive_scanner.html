@@ -648,6 +648,7 @@
         canvas.addEventListener('mouseup', endDraw);
         canvas.addEventListener('mouseleave', endDraw);
         canvas.addEventListener('click', handleCanvasClick);
+        canvas.addEventListener('dblclick', handleCanvasDblClick);
 
         function handleFileSelect(input) {
             if (!input.files || !input.files[0]) return;
@@ -1447,6 +1448,27 @@
                 clearRowHighlight();
                 stopHighlightAnimation();
                 redraw();
+            }
+        }
+
+        function handleCanvasDblClick(e) {
+            if (isDrawing || results.length === 0) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const clickX = (e.clientX - rect.left) * scaleX;
+            const clickY = (e.clientY - rect.top) * scaleY;
+
+            // Check if double-click is inside any result blob
+            for (let i = 0; i < results.length; i++) {
+                const r = results[i];
+                if (clickX >= r.x && clickX <= r.x + r.width &&
+                    clickY >= r.y && clickY <= r.y + r.height) {
+                    // Open review modal for this blob
+                    openReview(i);
+                    return;
+                }
             }
         }
 

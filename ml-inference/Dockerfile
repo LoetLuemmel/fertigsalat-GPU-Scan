@@ -3,16 +3,17 @@ FROM nvcr.io/nvidia/l4t-ml:r36.2.0-py3
 
 WORKDIR /app
 
-# Install poppler-utils for PDF to image conversion
+# Install poppler-utils for PDF to image conversion and libzbar for QR code detection
 RUN apt-get update && apt-get install -y --no-install-recommends \
     poppler-utils \
+    libzbar0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install EasyOCR with compatible versions
 # Use opencv-python-headless 4.9.x which supports numpy 1.x
 RUN pip3 install --no-cache-dir \
     python-bidi pyclipper Shapely "scikit-image<0.24" imageio tifffile lazy-loader \
-    "opencv-python-headless==4.9.0.80" && \
+    "opencv-python-headless==4.9.0.80" pyzbar && \
     pip3 install --no-cache-dir easyocr --no-deps && \
     pip3 install --no-cache-dir "numpy==1.26.1" --force-reinstall
 

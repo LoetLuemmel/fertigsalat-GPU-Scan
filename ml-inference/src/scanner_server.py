@@ -19,6 +19,7 @@ import tempfile
 import cgi
 import cv2
 import numpy as np
+from pyzbar import pyzbar
 
 # Configuration
 PORT = 8080
@@ -26,6 +27,7 @@ TEMPLATES_DIR = '/app/templates'
 INTERMEDIATE_DIR = '/app/intermediate'
 TRAINING_DIR = '/app/training_data'
 SAVED_ZONES_FILE = '/app/templates/saved_zones.json'
+BLOB_DISPLAY_SIZE = 87  # Fixed blob size for frontend display (pixels)
 
 # Ensure directories exist
 os.makedirs(TRAINING_DIR, exist_ok=True)
@@ -245,6 +247,136 @@ def deskew(image: np.ndarray, max_angle: float = 10.0):
     return rotated, median_angle
 
 
+def detect_qr_in_image(gray_image):
+    """
+    Try to detect QR code using multiple methods.
+    Returns (center_x, center_y) or None if not found.
+    """
+    # Method 1: pyzbar (usually faster)
+    try:
+        decoded_objects = pyzbar.decode(gray_image)
+        qr_codes = [obj for obj in decoded_objects if obj.type == 'QRCODE']
+        if qr_codes:
+            qr = qr_codes[0]
+            center_x = qr.rect.left + qr.rect.width / 2
+            center_y = qr.rect.top + qr.rect.height / 2
+            print(f"  pyzbar found QR at ({center_x:.0f}, {center_y:.0f})")
+            return center_x, center_y
+    except Exception as e:
+        print(f"  pyzbar error: {e}")
+
+    # Method 2: OpenCV QRCodeDetector (more robust for some images)
+    try:
+        detector = cv2.QRCodeDetector()
+        retval, points = detector.detect(gray_image)
+        if retval and points is not None:
+            # points is array of corner coordinates
+            pts = points[0]
+            center_x = np.mean(pts[:, 0])
+            center_y = np.mean(pts[:, 1])
+            print(f"  OpenCV QRCodeDetector found QR at ({center_x:.0f}, {center_y:.0f})")
+            return center_x, center_y
+    except Exception as e:
+        print(f"  OpenCV QRCodeDetector error: {e}")
+
+    # Method 3: Try with enhanced contrast
+    try:
+        # Apply CLAHE for better contrast
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        enhanced = clahe.apply(gray_image)
+
+        # Try pyzbar on enhanced image
+        decoded_objects = pyzbar.decode(enhanced)
+        qr_codes = [obj for obj in decoded_objects if obj.type == 'QRCODE']
+        if qr_codes:
+            qr = qr_codes[0]
+            center_x = qr.rect.left + qr.rect.width / 2
+            center_y = qr.rect.top + qr.rect.height / 2
+            print(f"  pyzbar (enhanced) found QR at ({center_x:.0f}, {center_y:.0f})")
+            return center_x, center_y
+
+        # Try OpenCV on enhanced image
+        detector = cv2.QRCodeDetector()
+        retval, points = detector.detect(enhanced)
+        if retval and points is not None:
+            pts = points[0]
+            center_x = np.mean(pts[:, 0])
+            center_y = np.mean(pts[:, 1])
+            print(f"  OpenCV (enhanced) found QR at ({center_x:.0f}, {center_y:.0f})")
+            return center_x, center_y
+    except Exception as e:
+        print(f"  Enhanced detection error: {e}")
+
+    return None
+
+
+def detect_orientation_by_qr(image: np.ndarray):
+    """
+    Detect and correct document orientation using QR code position.
+
+    The QR code should be in the BOTTOM-RIGHT corner of a correctly oriented document.
+    Tests all 4 orientations (0°, 90°, 180°, 270°) to find the QR code.
+
+    Args:
+        image: Input image (BGR)
+
+    Returns:
+        Tuple of (corrected image, rotation angle applied in degrees)
+    """
+    h, w = image.shape[:2]
+    print(f"Detecting QR code orientation (image size: {w}x{h})")
+
+    # Test all 4 orientations
+    orientations = [
+        (0, None, 0),                              # Original
+        (90, cv2.ROTATE_90_CLOCKWISE, -90),        # Rotate 90° CW to test
+        (180, cv2.ROTATE_180, 180),                # Rotate 180° to test
+        (270, cv2.ROTATE_90_COUNTERCLOCKWISE, 90), # Rotate 270° CW to test
+    ]
+
+    for test_angle, rotation_code, correction in orientations:
+        print(f"Testing orientation {test_angle}°...")
+
+        # Apply test rotation
+        if rotation_code is None:
+            test_image = image
+        else:
+            test_image = cv2.rotate(image, rotation_code)
+
+        th, tw = test_image.shape[:2]
+
+        # Convert to grayscale for QR detection
+        if len(test_image.shape) == 3:
+            gray = cv2.cvtColor(test_image, cv2.COLOR_BGR2GRAY)
+        else:
+            gray = test_image
+
+        # Try to detect QR code
+        qr_pos = detect_qr_in_image(gray)
+
+        if qr_pos:
+            qr_center_x, qr_center_y = qr_pos
+
+            in_right_half = qr_center_x > tw / 2
+            in_bottom_half = qr_center_y > th / 2
+
+            print(f"QR code at test rotation {test_angle}°: "
+                  f"position=({qr_center_x:.0f}, {qr_center_y:.0f}), "
+                  f"right={in_right_half}, bottom={in_bottom_half}")
+
+            # QR should be in BOTTOM-RIGHT for correct orientation
+            if in_right_half and in_bottom_half:
+                if correction == 0:
+                    print("Document already correctly oriented (QR in bottom-right)")
+                    return image, 0
+                else:
+                    print(f"Orientation corrected by {correction}° (QR now in bottom-right)")
+                    return test_image, correction
+
+    print("No QR code detected in any orientation, skipping QR-based correction")
+    return image, 0
+
+
 def parse_eml_attachments(eml_content):
     """
     Parse EML content and extract attachments.
@@ -393,23 +525,14 @@ def save_image_for_scanner(img_bytes, filename='attachment'):
     corrected_bytes = img_bytes  # Default: return original
 
     if image is not None:
-        # Detect and correct orientation using OCR
-        # DISABLED: OCR orientation detection uses too much memory on Jetson
-        # TODO: Re-enable with memory optimization or lower resolution
-        # ocr = get_ocr_engine()
-        # if ocr is not None:
-        #     print("Detecting document orientation...")
-        #     corrected, angle = ocr.correct_orientation(image)
-        #     if angle != 0:
-        #         print(f"Orientation corrected by {angle}°")
-        #         image = corrected
-        #         _last_processing_info['orientation_angle'] = angle
-        #         _last_processing_info['orientation_corrected'] = True
-        #     else:
-        #         print("Document orientation is correct")
-        print("Skipping OCR orientation detection (memory optimization)")
+        # Step 1: Detect and correct major orientation (90°/180°/270°) using QR code
+        print("Detecting document orientation via QR code...")
+        image, orientation_angle = detect_orientation_by_qr(image)
+        if orientation_angle != 0:
+            _last_processing_info['orientation_angle'] = orientation_angle
+            _last_processing_info['orientation_corrected'] = True
 
-        # Apply deskew to correct small rotations
+        # Step 2: Apply deskew to correct small rotations (fine adjustment)
         image, deskew_angle = deskew(image)
         if deskew_angle != 0:
             _last_processing_info['deskew_angle'] = round(deskew_angle, 2)
@@ -1315,15 +1438,23 @@ def scan_row_based(zone_orders, zone_names, zone_codes, image_width, image_heigh
         if digit is None or confidence < 0.4:
             continue
 
+        # Calculate centered position for fixed blob size
+        orig_x = int((blob['zone_x'] + blob['x']) / scale_x)
+        orig_y = int((blob['zone_y'] + blob['y']) / scale_y)
+        orig_w = int(blob['w'] / scale_x)
+        orig_h = int(blob['h'] / scale_y)
+        centered_x = orig_x - (BLOB_DISPLAY_SIZE - orig_w) // 2
+        centered_y = orig_y - (BLOB_DISPLAY_SIZE - orig_h) // 2
+
         results.append({
             'digit': digit,
             'confidence': round(confidence, 3),
             'column': blob['column'],
             'y_center': y_center,
-            'x': int((blob['zone_x'] + blob['x']) / scale_x),
-            'y': int((blob['zone_y'] + blob['y']) / scale_y),
-            'width': int(blob['w'] / scale_x),
-            'height': int(blob['h'] / scale_y),
+            'x': centered_x,
+            'y': centered_y,
+            'width': BLOB_DISPLAY_SIZE,
+            'height': BLOB_DISPLAY_SIZE,
             'product_name': clean_product_name(ocr_results.get(f"{y_center}_name", '')),
             'product_code': ocr_results.get(f"{y_center}_code", '')
         })
@@ -1684,6 +1815,7 @@ cell_w = zone_w / num_cols
 cell_h = zone_h / num_rows
 
 COLUMNS = ['Mo', 'Di', 'Mi', 'Do', 'Fr']
+BLOB_DISPLAY_SIZE = {BLOB_DISPLAY_SIZE}  # Fixed blob size for frontend display
 results = []
 
 # Cache for product info per row (to avoid repeated OCR)
@@ -1875,6 +2007,14 @@ for cnt in contours:
     else:
         detected_column = COLUMNS[col] if col < len(COLUMNS) else f'Col{{col+1}}'
 
+    # Calculate centered position for fixed blob size
+    orig_x = int(abs_x / scale_x)
+    orig_y = int(abs_y / scale_y)
+    orig_w = int((bx2 - bx1) / scale_x)
+    orig_h = int((by2 - by1) / scale_y)
+    centered_x = orig_x - (BLOB_DISPLAY_SIZE - orig_w) // 2
+    centered_y = orig_y - (BLOB_DISPLAY_SIZE - orig_h) // 2
+
     # Store blob metadata (recognition will happen in main process)
     results.append({{
         'blob_path': blob_path,
@@ -1882,10 +2022,10 @@ for cnt in contours:
         'column': detected_column,
         'product_code': product_code,
         'product_name': product_name,
-        'x': int(abs_x / scale_x),
-        'y': int(abs_y / scale_y),
-        'width': int((bx2 - bx1) / scale_x),
-        'height': int((by2 - by1) / scale_y)
+        'x': centered_x,
+        'y': centered_y,
+        'width': BLOB_DISPLAY_SIZE,
+        'height': BLOB_DISPLAY_SIZE
     }})
     blob_id += 1
 
